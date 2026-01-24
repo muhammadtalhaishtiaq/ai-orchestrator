@@ -9,6 +9,7 @@ import logging
 
 from config import settings
 from database import db, connect_db, close_db
+from auth.routes import router as auth_router  # Import auth routes
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -50,6 +51,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include routers
+app.include_router(auth_router, prefix="/api")  # Routes: /api/auth/*
 
 # --- In-Memory Database ---
 # Structure: { session_id: [ {role: "user", content: "hi"}, ... ] }

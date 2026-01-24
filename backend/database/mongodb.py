@@ -100,5 +100,21 @@ def get_db() -> AsyncIOMotorDatabase:
     return Database.get_db()
 
 
-# Alias for easy access
-db = Database
+# Create a proxy object that delegates to Database.db
+class DatabaseProxy:
+    """
+    Proxy that allows using db.users, db.chat_sessions etc.
+    Delegates all attribute access to the actual database instance.
+    """
+    def __getattr__(self, name):
+        if Database.db is None:
+            raise RuntimeError("Database not connected. Call connect_db() first.")
+        return getattr(Database.db, name)
+    
+    @property
+    def client(self):
+        return Database.client
+
+
+# Global db instance for easy imports
+db = DatabaseProxy()
