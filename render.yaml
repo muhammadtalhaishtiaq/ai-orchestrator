@@ -1,0 +1,43 @@
+# Render Blueprint - Defines all services for Project Nebula
+# This file tells Render how to deploy your entire project
+
+services:
+  # ============ BACKEND API ============
+  - type: web
+    name: nebula-api
+    runtime: python
+    region: oregon  # Free tier region
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: MONGODB_URI
+        sync: false  # You'll set this manually in Render dashboard
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: ENVIRONMENT
+        value: production
+      - key: PYTHON_VERSION
+        value: "3.11"
+    healthCheckPath: /api/health
+
+  # ============ FRONTEND APP ============
+  - type: web
+    name: nebula-app
+    runtime: node
+    region: oregon
+    plan: free
+    rootDir: web-client
+    buildCommand: npm install -g pnpm && pnpm install && pnpm build
+    startCommand: pnpm start
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          name: nebula-api
+          type: web
+          property: url
+      - key: NODE_VERSION
+        value: "20"

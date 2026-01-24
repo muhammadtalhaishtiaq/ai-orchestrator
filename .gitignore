@@ -1,0 +1,52 @@
+# ============ SECRETS (NEVER COMMIT!) ============
+.env
+.env.local
+.env.production
+*.pem
+*.key
+
+# ============ Python ============
+__pycache__/
+*.py[cod]
+*.pyo
+*.so
+*.egg
+*.egg-info/
+venv/
+env/
+.venv/
+*.pkl          # Trained ML models (can be large)
+*.h5           # Keras models
+*.pt           # PyTorch models
+
+# ============ Node.js ============
+node_modules/
+dist/
+.next/
+out/
+build/
+.pnpm-store/
+
+# ============ IDE ============
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# ============ Testing ============
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# ============ Logs ============
+*.log
+logs/
+
+# ============ OS ============
+Thumbs.db
+.DS_Store
+
+# ============ Render ============
+.render/

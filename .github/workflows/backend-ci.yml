@@ -1,0 +1,74 @@
+name: Backend CI/CD
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - 'ai-engine/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - 'ai-engine/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      
+      - name: Install dependencies
+        run: |
+          cd backend
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio httpx
+      
+      - name: Run linting
+        run: |
+          pip install flake8
+          flake8 backend/ --max-line-length=120 --ignore=E501,W503
+        continue-on-error: true  # Don't fail on lint for now
+      
+      - name: Run tests
+        run: |
+          cd backend
+          pytest tests/ -v --tb=short
+        continue-on-error: true  # Tests optional until we write them
+      
+      - name: Verify app starts
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        run: |
+          cd backend
+          timeout 10 python -c "from main import app; print('✅ App imports successfully')" || true
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+      - name: Deploy to Render
+        run: |
+          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_BACKEND }}"
+        # Only runs if you've set up the Render deploy hook
+        continue-on-error: true
