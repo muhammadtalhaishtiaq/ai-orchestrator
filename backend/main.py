@@ -9,7 +9,7 @@ import logging
 
 from config import settings
 from database import db, connect_db, close_db
-from auth.routes import router as auth_router  # Import auth routes
+from api.auth import router as auth_router  # Import auth routes
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -46,7 +46,7 @@ app = FastAPI(
 # Setup CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for dev
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
