@@ -23,6 +23,44 @@ I'm a software engineer learning ML, and I got tired of just following tutorials
 **Database:** MongoDB Atlas  
 **AI:** OpenAI API (for now, might add local models later)
 
+## Architecture (Layered & Modular)
+
+Backend is organized by layers to minimize coupling:
+
+- **API layer**: thin routers only (no DB logic)
+- **Service layer**: business logic (auth, chat, ML orchestration)
+- **Repository layer**: database access only
+- **Schemas**: request/response models
+- **Dependencies**: FastAPI DI (current user, auth)
+- **Core**: shared security helpers
+
+Frontend is split into small modules:
+
+- **lib/auth**: auth client, storage, and types (no UI)
+- **components**: UI only
+- **app**: pages only
+
+## Directory Structure
+
+```
+project_nebula/
+├── backend/
+│   ├── api/                 # Route handlers (thin controllers)
+│   ├── services/            # Business logic
+│   ├── repositories/        # DB access layer
+│   ├── schemas/             # Pydantic request/response models
+│   ├── dependencies/        # FastAPI dependencies (auth)
+│   ├── core/                # Security helpers (JWT, hashing)
+│   ├── auth/                # Legacy wrappers (backward compatibility)
+│   └── main.py              # App entry
+├── ai-engine/               # ML modules
+└── web-client/
+	├── app/                 # Pages
+	├── components/          # UI components
+	└── lib/
+		└── auth/             # Auth client + storage + types
+```
+
 ## Current Status
 
 🚧 **Very much a work in progress** 🚧

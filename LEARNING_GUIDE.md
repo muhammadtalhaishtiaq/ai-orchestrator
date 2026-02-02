@@ -382,10 +382,17 @@ project_nebula/
 ├── LEARNING_GUIDE.md      # This file!
 │
 ├── backend/               # Python API
-│   ├── main.py           # FastAPI app
+│   ├── main.py           # FastAPI app entry
 │   ├── config.py         # Settings
 │   ├── requirements.txt  # Dependencies
 │   ├── database/         # MongoDB connection & models
+│   ├── api/              # Route handlers (thin controllers)
+│   ├── services/         # Business logic
+│   ├── repositories/     # DB access layer
+│   ├── schemas/          # Pydantic request/response models
+│   ├── dependencies/     # FastAPI dependencies (auth)
+│   ├── core/             # Security helpers (JWT, hashing)
+│   ├── auth/             # Legacy wrappers (backward compatibility)
 │   └── venv/             # Virtual environment
 │
 ├── ai-engine/            # ML modules (coming soon!)
@@ -396,8 +403,37 @@ project_nebula/
 │
 └── web-client/           # Next.js frontend
     ├── app/              # Pages
-    └── components/       # UI components
+    ├── components/       # UI components
+    └── lib/
+        └── auth/         # Auth client + storage + types
 ```
+
+#### Layered Backend Architecture (Why It Matters)
+
+We organized the backend into **clear layers** so each file has one job:
+
+```
+API (routes) → Services (business logic) → Repositories (DB access)
+                      ↓
+                Schemas + Dependencies + Core
+```
+
+**Benefits:**
+- Changes in DB don’t break API routes
+- Auth logic is reusable across endpoints
+- Easy to test each layer independently
+
+#### Frontend Auth Modularity
+
+We split auth into three small modules:
+
+```
+lib/auth/types.ts     # Types only
+lib/auth/storage.ts   # Local storage helpers
+lib/auth/client.ts    # API calls (login/register/logout)
+```
+
+This keeps UI code clean and avoids tight coupling between state, API, and storage.
 
 ---
 
