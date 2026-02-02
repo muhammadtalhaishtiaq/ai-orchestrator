@@ -18,6 +18,7 @@ import {
   HelpCircle,
   Moon
 } from "lucide-react"
+import { useAuth } from "@/components/auth-provider"
 
 export interface ChatSession {
   id: string
@@ -144,6 +145,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isCollapsed, onToggle, onSelectChat, onNewChat, activeChatId }: SidebarProps) {
+  const { user, logout } = useAuth()
   const [hoveredChat, setHoveredChat] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [isProfileOpen, setIsProfileOpen] = useState(false)
@@ -350,12 +352,13 @@ export default function Sidebar({ isCollapsed, onToggle, onSelectChat, onNewChat
               </button>
             </div>
             <div className="border-t border-cyan-500/20 p-2">
-              <Link href="/login">
-                <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-500/10 transition-colors text-left">
-                  <LogOut className="w-4 h-4 text-red-400" />
-                  <span className="text-sm text-red-400">Log out</span>
-                </button>
-              </Link>
+              <button 
+                onClick={logout}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-500/10 transition-colors text-left"
+              >
+                <LogOut className="w-4 h-4 text-red-400" />
+                <span className="text-sm text-red-400">Log out</span>
+              </button>
             </div>
           </div>
         )}
@@ -368,8 +371,8 @@ export default function Sidebar({ isCollapsed, onToggle, onSelectChat, onNewChat
             <User className="w-5 h-5 text-cyan-400" />
           </div>
           <div className="flex-1 text-left">
-            <p className="text-sm font-medium text-gray-200">Admin User</p>
-            <p className="text-xs text-gray-500">Enterprise Plan</p>
+            <p className="text-sm font-medium text-gray-200">{user?.full_name || user?.email || "User"}</p>
+            <p className="text-xs text-gray-500">Free Plan</p>
           </div>
           <ChevronRight className={`w-4 h-4 text-gray-500 group-hover:text-gray-300 transition-all ${isProfileOpen ? "rotate-90" : ""}`} />
         </button>

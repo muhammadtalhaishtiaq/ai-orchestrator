@@ -4,7 +4,6 @@ import React from "react"
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   Eye,
   EyeOff,
@@ -15,17 +14,20 @@ import {
   Sparkles,
   Check,
   X,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useAuth } from "@/components/auth-provider";
 
 export default function RegisterPage() {
-  const router = useRouter();
+  const { register, isLoading: authLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -33,6 +35,7 @@ export default function RegisterPage() {
     confirmPassword: "",
     agreeTerms: false,
   });
+
 
   const passwordRequirements = [
     { label: "At least 8 characters", met: formData.password.length >= 8 },
@@ -48,10 +51,16 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate registration
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIsLoading(false);
-    router.push("/");
+    setError(null);
+    
+    try {
+      await register(formData.email, formData.password, formData.fullName);
+      // Redirect happens in AuthProvider
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Registration failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -93,6 +102,14 @@ export default function RegisterPage() {
             <h2 className="text-xl font-semibold text-white">Create your account</h2>
             <p className="text-gray-400 text-sm mt-1">Start your AI journey today</p>
           </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+              <p className="text-sm text-red-400">{error}</p>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Full Name Field */}
