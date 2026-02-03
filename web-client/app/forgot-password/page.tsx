@@ -46,9 +46,9 @@ export default function ForgotPasswordPage() {
       <div className="relative z-10 w-full max-w-md mx-4">
         {/* Logo/Brand */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30 mb-4">
+          {/* <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30 mb-4">
             <Sparkles className="w-8 h-8 text-blue-400" />
-          </div>
+          </div> */}
           <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 via-cyan-400 to-teal-400 bg-clip-text text-transparent">
             PROJECT NEBULA
           </h1>

@@ -22,8 +22,7 @@ export async function register(
   });
 
   if (!response.ok) {
-    const error: AuthError = await response.json();
-    throw new Error(error.detail || "Registration failed");
+    throw new Error(await parseErrorMessage(response));
   }
 
   const data: AuthResponse = await response.json();
@@ -42,8 +41,7 @@ export async function login(email: string, password: string): Promise<AuthRespon
   });
 
   if (!response.ok) {
-    const error: AuthError = await response.json();
-    throw new Error(error.detail || "Login failed");
+    throw new Error(await parseErrorMessage(response));
   }
 
   const data: AuthResponse = await response.json();
@@ -80,4 +78,28 @@ export async function fetchCurrentUser(): Promise<User | null> {
   } catch {
     return null;
   }
+}
+
+async function parseErrorMessage(response: Response): Promise<string> {
+  try {
+    const error: AuthError = await response.json();
+    if (typeof error.detail === "string" && error.detail.trim()) {
+      return error.detail;
+    }
+    if (Array.isArray(error.detail)) {
+      const messages = error.detail
+        .map((item) => (typeof item?.msg === "string" ? item.msg : ""))
+        .filter(Boolean);
+      if (messages.length) {
+        return messages.join("; ");
+      }
+    }
+    if (typeof (error as { message?: unknown }).message === "string") {
+      return (error as { message: string }).message;
+    }
+  } catch {
+    // ignore JSON parse errors
+  }
+
+  return response.statusText || String(response.status);
 }

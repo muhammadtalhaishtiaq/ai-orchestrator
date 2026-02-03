@@ -4,35 +4,36 @@ import React from "react"
 
 import { useState } from "react";
 import Link from "next/link";
-import { Eye, EyeOff, Mail, Lock, ArrowRight, Sparkles, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/components/auth-provider";
+import { useToast } from "@/hooks/use-toast";
 
 export default function LoginPage() {
   const { login, isLoading: authLoading } = useAuth();
+  const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     rememberMe: false,
   });
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError(null);
-    
     try {
       await login(formData.email, formData.password);
-      // Redirect happens in AuthProvider
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed. Please try again.");
+      const message = err instanceof Error ? err.message : String(err);
+      toast({
+        title: message,
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -62,11 +63,11 @@ export default function LoginPage() {
       <div className="relative z-10 w-full max-w-md mx-4">
         {/* Logo/Brand */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-cyan-500/30 mb-4">
+          {/* <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-cyan-500/30 mb-4">
             <Sparkles className="w-8 h-8 text-cyan-400" />
-          </div>
+          </div> */}
           <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
-            PROJECT NEBULA
+            <Link href="/">PROJECT NEBULA</Link>
           </h1>
           <p className="text-gray-400 text-sm mt-1">Hybrid AI Orchestrator</p>
         </div>
@@ -77,14 +78,6 @@ export default function LoginPage() {
             <h2 className="text-xl font-semibold text-white">Welcome back</h2>
             <p className="text-gray-400 text-sm mt-1">Sign in to your account to continue</p>
           </div>
-
-          {/* Error Message */}
-          {error && (
-            <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
-              <p className="text-sm text-red-400">{error}</p>
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email Field */}
@@ -112,12 +105,12 @@ export default function LoginPage() {
                 <Label htmlFor="password" className="text-gray-300 text-sm">
                   Password
                 </Label>
-                <Link
+                {/* <Link
                   href="/forgot-password"
                   className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors"
                 >
                   Forgot password?
-                </Link>
+                </Link> */}
               </div>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
@@ -176,17 +169,17 @@ export default function LoginPage() {
           </form>
 
           {/* Divider */}
-          <div className="relative my-6">
+          {/* <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-white/10" />
             </div>
             <div className="relative flex justify-center text-xs">
               <span className="px-2 bg-[#0f1029] text-gray-500">or continue with</span>
             </div>
-          </div>
+          </div> */}
 
           {/* Social Login */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* <div className="grid grid-cols-2 gap-3">
             <Button
               type="button"
               variant="outline"
@@ -222,7 +215,7 @@ export default function LoginPage() {
               </svg>
               GitHub
             </Button>
-          </div>
+          </div> */}
 
           {/* Sign Up Link */}
           <p className="text-center text-sm text-gray-400 mt-6">
@@ -237,7 +230,7 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-xs text-gray-500 mt-6">
+        {/* <p className="text-center text-xs text-gray-500 mt-6">
           By signing in, you agree to our{" "}
           <Link href="/terms" className="text-gray-400 hover:text-gray-300">
             Terms of Service
@@ -246,7 +239,7 @@ export default function LoginPage() {
           <Link href="/privacy" className="text-gray-400 hover:text-gray-300">
             Privacy Policy
           </Link>
-        </p>
+        </p> */}
       </div>
     </div>
   );

@@ -14,20 +14,20 @@ import {
   Sparkles,
   Check,
   X,
-  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/components/auth-provider";
+import { useToast } from "@/hooks/use-toast";
 
 export default function RegisterPage() {
   const { register, isLoading: authLoading } = useAuth();
+  const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -35,7 +35,6 @@ export default function RegisterPage() {
     confirmPassword: "",
     agreeTerms: false,
   });
-
 
   const passwordRequirements = [
     { label: "At least 8 characters", met: formData.password.length >= 8 },
@@ -51,13 +50,14 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError(null);
-    
     try {
       await register(formData.email, formData.password, formData.fullName);
-      // Redirect happens in AuthProvider
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Registration failed. Please try again.");
+      const message = err instanceof Error ? err.message : String(err);
+      toast({
+        title: message,
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -87,11 +87,8 @@ export default function RegisterPage() {
       <div className="relative z-10 w-full max-w-md mx-4">
         {/* Logo/Brand */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-cyan-500/30 mb-4">
-            <Sparkles className="w-8 h-8 text-cyan-400" />
-          </div>
           <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
-            PROJECT NEBULA
+            <Link href="/">PROJECT NEBULA</Link>
           </h1>
           <p className="text-gray-400 text-sm mt-1">Hybrid AI Orchestrator</p>
         </div>
@@ -102,14 +99,6 @@ export default function RegisterPage() {
             <h2 className="text-xl font-semibold text-white">Create your account</h2>
             <p className="text-gray-400 text-sm mt-1">Start your AI journey today</p>
           </div>
-
-          {/* Error Message */}
-          {error && (
-            <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
-              <p className="text-sm text-red-400">{error}</p>
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Full Name Field */}
@@ -239,7 +228,7 @@ export default function RegisterPage() {
             </div>
 
             {/* Terms Agreement */}
-            <div className="flex items-start space-x-2">
+            {/* <div className="flex items-start space-x-2">
               <Checkbox
                 id="terms"
                 checked={formData.agreeTerms}
@@ -258,12 +247,12 @@ export default function RegisterPage() {
                   Privacy Policy
                 </Link>
               </Label>
-            </div>
+            </div> */}
 
             {/* Submit Button */}
             <Button
               type="submit"
-              disabled={isLoading || !formData.agreeTerms || !passwordsMatch}
+              disabled={isLoading || !passwordsMatch}
               className="w-full h-12 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white font-medium rounded-xl transition-all duration-300 shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
@@ -281,17 +270,17 @@ export default function RegisterPage() {
           </form>
 
           {/* Divider */}
-          <div className="relative my-6">
+          {/* <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-white/10" />
             </div>
             <div className="relative flex justify-center text-xs">
               <span className="px-2 bg-[#0f1029] text-gray-500">or sign up with</span>
             </div>
-          </div>
+          </div> */}
 
           {/* Social Signup */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* <div className="grid grid-cols-2 gap-3">
             <Button
               type="button"
               variant="outline"
@@ -327,7 +316,7 @@ export default function RegisterPage() {
               </svg>
               GitHub
             </Button>
-          </div>
+          </div> */}
 
           {/* Sign In Link */}
           <p className="text-center text-sm text-gray-400 mt-6">
@@ -342,7 +331,7 @@ export default function RegisterPage() {
         </div>
 
         {/* Features */}
-        <div className="mt-6 grid grid-cols-3 gap-3">
+        {/* <div className="mt-6 grid grid-cols-3 gap-3">
           {[
             { icon: "AI-Powered", label: "Smart AI" },
             { icon: "Secure", label: "Enterprise" },
@@ -356,7 +345,7 @@ export default function RegisterPage() {
               <p className="text-xs text-gray-500 mt-1">{feature.label}</p>
             </div>
           ))}
-        </div>
+        </div> */}
       </div>
     </div>
   );

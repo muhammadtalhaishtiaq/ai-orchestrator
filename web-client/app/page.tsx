@@ -1,194 +1,106 @@
-"use client"
+'use client';
 
-import { useState, useCallback, useEffect } from "react"
-import Sidebar, { chatHistoryData } from "@/components/sidebar"
-import ChatSection from "@/components/chat-section"
-import SystemInternals from "@/components/system-internals"
-import { createSession, sendMessage, listSessions, getSessionMessages } from "@/lib/chat"
+import Link from 'next/link';
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+  Brain,
+  PlayCircle,
+  Menu,
+  X,
+} from 'lucide-react';
 
-interface Message {
-  id: string
-  role: "user" | "assistant"
-  content: string
-  timestamp: string
-  hasChart?: boolean
-}
-
-export default function ProjectNebula() {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
-  const [activeChatId, setActiveChatId] = useState<string | null>(null)
-  const [activeSessionId, setActiveSessionId] = useState<string | null>(null)
-  const [messages, setMessages] = useState<Message[]>([])
-  const [isNewChat, setIsNewChat] = useState(true)
-  const [sessions, setSessions] = useState<{ _id?: string; id?: string; title?: string; created_at?: string }[]>([])
-
-  useEffect(() => {
-    listSessions()
-      .then(setSessions)
-      .catch(() => setSessions([]))
-  }, [])
-
-  // Handle selecting a chat from sidebar
-  const handleSelectChat = useCallback((chatId: string | null) => {
-    if (chatId === null) {
-      setActiveChatId(null)
-      setActiveSessionId(null)
-      setMessages([])
-      setIsNewChat(true)
-      return
-    }
-
-    const realSession = sessions.find(s => (s.id || s._id) === chatId)
-    if (realSession) {
-      setActiveChatId(chatId)
-      setActiveSessionId(chatId)
-      setIsNewChat(false)
-
-      getSessionMessages(chatId)
-        .then((msgs) => {
-          const displayMessages: Message[] = msgs.map((msg, index) => ({
-            id: `${chatId}-${index}`,
-            role: msg.role === "assistant" ? "assistant" : "user",
-            content: msg.content,
-            timestamp: msg.timestamp
-              ? new Date(msg.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-              : "",
-          }))
-          setMessages(displayMessages)
-        })
-        .catch(() => {
-          setMessages([])
-        })
-
-      return
-    }
-
-    // Find the chat in history (static demo data)
-    for (const group of chatHistoryData) {
-      const chat = group.chats.find(c => c.id === chatId)
-      if (chat && chat.messages) {
-        setActiveChatId(chatId)
-        setActiveSessionId(null) // demo chat only (no backend session)
-        setIsNewChat(false)
-        
-        // Convert stored messages to display format
-        const displayMessages: Message[] = chat.messages.map((msg, index) => ({
-          id: `${chatId}-${index}`,
-          role: msg.role === "ai" ? "assistant" : "user",
-          content: msg.content,
-          timestamp: chat.date === "Today" ? "10:42 AM" : "Yesterday",
-          hasChart: msg.role === "ai" && chatId === "1" && index === 1 // Show chart for first chat's AI response
-        }))
-        
-        setMessages(displayMessages)
-        return
-      }
-    }
-  }, [sessions])
-
-  // Handle new chat
-  const handleNewChat = useCallback(() => {
-    setActiveChatId(null)
-    setActiveSessionId(null)
-    setMessages([])
-    setIsNewChat(true)
-  }, [])
-
-  // Handle sending a message
-  const handleSendMessage = useCallback(async (content: string) => {
-    let sessionId = activeSessionId
-
-    if (!sessionId) {
-      const newSession = await createSession()
-      sessionId = newSession.session_id
-      setActiveSessionId(sessionId)
-      setActiveChatId(sessionId)
-      setSessions((prev) => [
-        { id: sessionId, title: "New Chat", created_at: newSession.created_at },
-        ...prev,
-      ])
-    }
-
-    const newUserMessage: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content,
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    }
-
-    setMessages(prev => [...prev, newUserMessage])
-    setIsNewChat(false)
-
-    const response = await sendMessage(sessionId, content)
-
-    const aiResponse: Message = {
-      id: (Date.now() + 1).toString(),
-      role: "assistant",
-      content: response.response,
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      hasChart: response.has_chart,
-    }
-
-    setMessages(prev => [...prev, aiResponse])
-  }, [activeSessionId])
+export default function LandingPage() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [setStats] = useState({
+    algorithms: 0,
+    visualizations: 0,
+    examples: 0,
+  });
 
   return (
-    <div className="h-screen bg-[#0a0e1a] relative overflow-hidden">
-      {/* Animated background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#0a1628] via-[#0d1a30] to-[#0a0e1a]" />
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cmFkaWFsR3JhZGllbnQgaWQ9InN0YXIiIGN4PSI1MCUiIGN5PSI1MCUiIHI9IjUwJSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2ZmZiIgc3RvcC1vcGFjaXR5PSIxIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjZmZmIiBzdG9wLW9wYWNpdHk9IjAiLz48L3JhZGlhbEdyYWRpZW50PjwvZGVmcz48Y2lyY2xlIGN4PSIxMCIgY3k9IjEwIiByPSIxIiBmaWxsPSJ1cmwoI3N0YXIpIiBvcGFjaXR5PSIwLjUiLz48Y2lyY2xlIGN4PSIxNTAiIGN5PSI1MCIgcj0iMC41IiBmaWxsPSJ1cmwoI3N0YXIpIiBvcGFjaXR5PSIwLjMiLz48Y2lyY2xlIGN4PSI4MCIgY3k9IjE4MCIgcj0iMC43IiBmaWxsPSJ1cmwoI3N0YXIpIiBvcGFjaXR5PSIwLjQiLz48Y2lyY2xlIGN4PSIxODAiIGN5PSIxNDAiIHI9IjAuNiIgZmlsbD0idXJsKCNzdGFyKSIgb3BhY2l0eT0iMC4zIi8+PGNpcmNsZSBjeD0iNDAiIGN5PSIxMDAiIHI9IjAuNCIgZmlsbD0idXJsKCNzdGFyKSIgb3BhY2l0eT0iMC41Ii8+PC9zdmc+')] opacity-40" />
-      
-      {/* Nebula glow effects */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-[120px]" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-[120px]" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-[150px]" />
-
-      {/* Main content */}
-      <div className="relative z-10 flex h-full">
-        {/* ChatGPT-style Sidebar */}
-        <Sidebar 
-          isCollapsed={isSidebarCollapsed} 
-          onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          onSelectChat={handleSelectChat}
-          onNewChat={handleNewChat}
-          activeChatId={activeChatId}
-          sessions={sessions}
+    <div className="min-h-screen bg-[#0f1419] text-gray-100">
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
         />
-        
-        {/* Main Area */}
-        <main className="flex-1 flex flex-col min-w-0 h-full transition-all duration-300">
-          {/* Header */}
-          <header className="shrink-0 py-4 px-6">
-            <h1 className="text-center">
-              <span className="text-xl md:text-2xl font-bold tracking-[0.2em] bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-400 bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(56,189,248,0.5)]">
-                PROJECT NEBULA
-              </span>
-              <span className="text-xl md:text-2xl font-bold tracking-wider text-gray-400 ml-2">
-                - HYBRID AI ORCHESTRATOR
-              </span>
-            </h1>
-          </header>
+      )}
 
-          {/* Dashboard Content */}
-          <div className="flex-1 px-6 pb-6 min-h-0">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
-              {/* Chat Section - Takes 2 columns */}
-              <div className="lg:col-span-2 min-h-0">
-                <ChatSection 
-                  messages={messages}
-                  onSendMessage={handleSendMessage}
-                  isNewChat={isNewChat}
-                />
-              </div>
-              
-              {/* System Internals - Takes 1 column */}
-              <div className="lg:col-span-1 min-h-0 overflow-auto scrollbar-thin">
-                <SystemInternals />
-              </div>
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="fixed top-4 left-4 z-50 lg:hidden bg-cyan-500/20 p-2 rounded-lg border border-cyan-500/30"
+      >
+        {sidebarOpen ? <X className="w-6 h-6 text-cyan-400" /> : <Menu className="w-6 h-6 text-cyan-400" />}
+      </button>
+
+      {/* Navigation Bar */}
+      <nav className="fixed top-0 left-0 right-0 z-30 bg-[#0f1419]/80 backdrop-blur-xl border-b border-cyan-500/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <Link href="/" className="flex items-center gap-2">
+              {/* <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center">
+                <Brain className="w-6 h-6 text-white" />
+              </div> */}
+              <span className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                Project Nebula
+              </span>
+            </Link>
+
+            <div className="hidden md:flex items-center gap-6">
+              <Button variant="ghost" className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10" asChild>
+                <Link href="/login">Login</Link>
+              </Button>
+              <Button className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white" asChild>
+                <Link href="/register">Sign Up Free</Link>
+              </Button>
             </div>
           </div>
-        </main>
-      </div>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+        {/* Animated Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-purple-900/20 to-cyan-900/20" />
+        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20" />
+        
+        {/* Floating Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse delay-700" />
+          <div className="absolute top-1/2 right-1/3 w-48 h-48 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-6 bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent leading-tight">
+            Master AI/ML Engineering
+            {/* <br />
+            Through Interactive Learning */}
+          </h1>
+          
+          <p className="text-xl sm:text-2xl text-gray-400 mb-12 max-w-3xl mx-auto leading-relaxed">
+            Implement 40+ algorithms from scratch. Visualize how they work.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Button size="lg" className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-8 py-6 text-lg" asChild>
+              <Link href="/dashboard">
+                <PlayCircle className="w-5 h-5 mr-2" />
+                Start Learning
+              </Link>
+            </Button>
+          </div>
+
+          {/* Floating Math Formulas */}
+          {/* <div className="mt-16 text-cyan-400/30 text-sm space-y-2">
+            <div className="animate-pulse">∇f(x) = lim(h→0) [f(x+h) - f(x)] / h</div>
+            <div className="animate-pulse delay-500">σ(z) = 1 / (1 + e⁻ᶻ)</div>
+          </div> */}
+        </div>
+      </section>
     </div>
-  )
+  );
 }

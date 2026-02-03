@@ -12,23 +12,36 @@
 import { NextRequest, NextResponse } from "next/server";
 
 // Public routes - anyone can access
-const PUBLIC_ROUTES = ["/login", "/register", "/forgot-password"];
+const PUBLIC_ROUTES = ["/", "/login", "/register", "/forgot-password"];
 
 // Protected routes - only logged in users
-const PROTECTED_ROUTES = ["/", "/profile", "/settings"];
+const PROTECTED_PREFIXES = [
+  "/dashboard",
+  "/labs",
+  "/chat",
+  "/profile",
+  "/settings",
+  "/datasets",
+  "/experiments",
+  "/models",
+];
 
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const token = request.cookies.get("nebula_token")?.value;
 
+  const isProtectedRoute = PROTECTED_PREFIXES.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`)
+  );
+
   if (token) {
     if (PUBLIC_ROUTES.includes(pathname)) {
-      return NextResponse.redirect(new URL("/", request.url));
+      return NextResponse.redirect(new URL("/dashboard", request.url));
     }
     return NextResponse.next();
   }
 
-  if (PROTECTED_ROUTES.includes(pathname) || pathname === "/") {
+  if (isProtectedRoute) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
