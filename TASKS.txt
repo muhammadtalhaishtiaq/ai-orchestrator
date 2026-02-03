@@ -1,113 +1,588 @@
 ================================================================================
-PROJECT NEBULA - TASK TRACKER
-Last Updated: February 2, 2026
+PROJECT NEBULA - DETAILED TASK TRACKER
 ================================================================================
+Status: February 2, 2026 - Phase 3 Active
 
-CURRENT PHASE: Phase 2b - OpenAI Integration
-STATUS: Chat MVP Complete, Ready for AI Integration
-
-================================================================================
-CURRENT SPRINT - OPENAI INTEGRATION
-================================================================================
-
-PRIORITY 1: OpenAI Chat Implementation
-[ ] T-201: Create OpenAI client helper (backend/core/openai_client.py)
-    - Initialize client with API key
-    - Add error handling and retry logic
-    - Timeout configuration
-    
-[ ] T-202: Update chat_service.py send_message()
-    - Replace placeholder with OpenAI API call
-    - Fetch conversation history
-    - Format messages with roles (system, user, assistant)
-    - Handle OpenAI errors gracefully
-    - Log token usage and response time
-    
-[ ] T-203: Add OpenAI config to config.py
-    - Model name (default: gpt-4)
-    - Temperature setting
-    - Max tokens limit
-    - System prompt configuration
-    
-[ ] T-204: Create system prompt configuration
-    - Design Project Nebula assistant personality
-    - Add context about capabilities
-
-PRIORITY 2: UI/UX Refinement
-[ ] T-205: Remove hardcoded demo chats from sidebar
-    - Ensure real sessions load on mount
-    - Show empty state when no sessions
-    
-[ ] T-206: Add loading states to chat UI
-    - Show spinner while waiting for response
-    - Disable send button during processing
-    - Add typing indicator for assistant
-    
-[ ] T-207: Add error handling in chat UI
-    - Display API error messages
-    - Add retry button for failed messages
-    - Connection status indicator
-
-PRIORITY 3: Testing & Validation
-[ ] T-208: Manual end-to-end testing
-    - Login → Create session → Send message → Verify response
-    - Refresh page → Verify session persistence
-    - Multiple messages → Verify context
-    - Error scenarios
-    
-[ ] T-209: Performance testing
-    - Response time monitoring
-    - Concurrent user sessions
-    - Token usage monitoring
-    
-[ ] T-210: Update documentation
-    - Add OpenAI integration to README
-    - Update LEARNING_GUIDE with chat flow
-    - Document environment variables
+INSTRUCTIONS:
+- Track progress by marking tasks: [ ] = TODO, [x] = DONE, [-] = IN PROGRESS
+- Each task has Phase | Step | Sub-step hierarchy
+- Reference MASTER_ROADMAP.md for full context
+- Update this file as you complete tasks
+- Core rule: Use ML libraries when helpful; implement algorithms from scratch to learn, not to build a new library
 
 ================================================================================
-PHASE 2a COMPLETED - CHAT INFRASTRUCTURE
+PHASE 1: FOUNDATION & AUTHENTICATION (✅ COMPLETED)
 ================================================================================
 
-[x] T-150: Chat schemas (ChatSession, ChatMessage)
-[x] T-151: Chat repository (sessions and messages CRUD)
-[x] T-152: Chat service with placeholder logic
-[x] T-153: Chat API routes with auth protection
-[x] T-154: Frontend chat client (lib/chat/*)
-[x] T-155: Chat UI component (chat-section.tsx)
-[x] T-156: Sidebar with session list
-[x] T-157: Main page integration
-[x] T-158: Message persistence in MongoDB
-[x] T-159: Structured logging in services
-[x] T-160: Backend layered architecture refactor
-[x] T-161: Frontend modular structure refactor
+[x] Phase 1 | Step 1 | MongoDB Setup
+    [x] Setup MongoDB Atlas account
+    [x] Create project cluster
+    [x] Configure connection string
+    [x] Setup environment variables (.env)
+
+[x] Phase 1 | Step 2 | Backend Foundation
+    [x] Create FastAPI project structure
+    [x] Setup async Motor driver
+    [x] Create database connection module
+    [x] Setup logging configuration
+    [x] Create health check endpoint
+
+[x] Phase 1 | Step 3 | User Authentication System
+    [x] Create User schema (email, password_hash, created_at)
+    [x] Implement bcrypt password hashing (12+ rounds)
+    [x] Create JWT token generation
+    [x] Implement token verification middleware
+    [x] Setup httpOnly cookie handling
+
+[x] Phase 1 | Step 4 | Auth API Routes
+    [x] POST /api/auth/register - user registration
+    [x] POST /api/auth/login - user login
+    [x] POST /api/auth/logout - logout (clear cookies)
+    [x] GET /api/auth/me - get current user
+    [x] POST /api/auth/refresh - refresh token
+
+[x] Phase 1 | Step 5 | Frontend Auth System
+    [x] Create auth client (lib/auth/client.ts)
+    [x] Implement token storage in secure cookies
+    [x] Create AuthProvider component
+    [x] Create useAuth() hook
+    [x] Setup auth middleware/protection
+
+[x] Phase 1 | Step 6 | Auth UI Pages
+    [x] Create /login page with form
+    [x] Create /register page with validation
+    [x] Create /profile page
+    [x] Create /settings page
+    [x] Implement redirect flows (logged out → /login)
+
+[x] Phase 1 | Step 7 | Security Implementation
+    [x] Rate limiting on /login endpoint (5 attempts/15 min)
+    [x] Implement CORS configuration
+    [x] Setup secure session timeout (30 min idle)
+    [x] Add input validation (Pydantic models)
+    [x] Create error handling middleware
 
 ================================================================================
-PHASE 1 COMPLETED - AUTHENTICATION SYSTEM
+PHASE 2: PLATFORM STRUCTURE & UI GENERATION (✅ COMPLETED)
 ================================================================================
 
-[x] T-101: User schema and models
-[x] T-102: Password hashing utilities (bcrypt)
-[x] T-103: JWT token generation and verification
-[x] T-104: User repository with CRUD operations
-[x] T-105: Auth service (register, login, verify)
-[x] T-106: Auth API routes (register, login, logout, me)
-[x] T-107: HttpOnly cookie implementation
-[x] T-108: Frontend auth client (lib/auth/*)
-[x] T-109: Auth provider component
-[x] T-110: Middleware for route protection
-[x] T-111: Login/Register pages
-[x] T-112: Auth redirect flow
+[x] Phase 2 | Step 1 | Backend Architecture Setup
+    [x] Create backend directory structure (40+ folders)
+    [x] Setup algorithms folder hierarchy (regression, classification, clustering, etc)
+    [x] Create services layer foundation
+    [x] Create repositories layer foundation
+    [x] Create API routes structure
+
+[x] Phase 2 | Step 2 | Backend Modules
+    [x] Create preprocessing utilities (scalers, splitters)
+    [x] Create metrics calculation module (R², accuracy, precision, etc)
+    [x] Create visualization hooks module
+    [x] Create tests directory structure
+    [x] Setup pytest configuration
+
+[x] Phase 2 | Step 3 | Coding Standards Documentation
+    [x] Document naming conventions (snake_case, PascalCase)
+    [x] Document type hints requirements
+    [x] Document docstring standards (Google style)
+    [x] Document testing requirements (10+ tests per algorithm)
+    [x] Create PROJECT_NEBULA.md master reference
+
+[x] Phase 2 | Step 4 | Security Guidelines
+    [x] Document 27-point security checklist
+    [x] Document password security standards
+    [x] Document JWT and cookie security
+    [x] Document input validation standards
+    [x] Document logging standards (no secrets)
+
+[x] Phase 2 | Step 5 | VS Code Copilot Setup
+    [x] Create .vscode/ directory
+    [x] Create copilot-instructions.md (auto-loaded context)
+    [x] Add architecture patterns to instructions
+    [x] Add security checklist to instructions
+    [x] Add coding standards to instructions
+
+[x] Phase 2 | Step 6 | Frontend Scaffolding
+    [x] Create Next.js 15 project structure
+    [x] Setup Tailwind CSS + shadcn/ui
+    [x] Create theme provider component
+    [x] Setup TypeScript configuration
+    [x] Create hooks (use-mobile, use-toast)
+
+[x] Phase 2 | Step 7 | UI Generation via V0.dev
+    [x] Create V0_DEV_LANDING_PROMPT.md (10 sections, hero, value prop, footer)
+    [x] Generate landing page via V0.dev (complete with all sections)
+    [x] Create V0_DEV_DASHBOARD_PROMPT.md (30+ routes, sidebar navigation)
+    [x] Generate dashboard + 30+ lab pages via V0.dev
+    [x] Verify persistent sidebar on all pages
+
+[x] Phase 2 | Step 8 | UI Integration
+    [x] Copy generated landing page to web-client
+    [x] Copy generated dashboard to web-client
+    [x] Copy all 30+ lab routes to web-client
+    [x] Copy lab-page-template.tsx component
+    [x] Verify sidebar navigation works across all pages
+
+[x] Phase 2 | Step 9 | Documentation
+    [x] Update README.md with current status
+    [x] Create MASTER_ROADMAP.md (consolidated reference)
+    [x] Create TASKS.txt (this file - task tracker)
+    [x] Document all 40+ algorithm taxonomy
+    [x] Document all 8 project phases
 
 ================================================================================
-PHASE 0 COMPLETED - PROJECT FOUNDATION
+PHASE 3: CORE ALGORITHMS LABORATORY (🔄 IN PROGRESS)
 ================================================================================
 
-[x] T-001: MongoDB Atlas setup and connection
-[x] T-002: Database configuration
-[x] T-003: Health check endpoint
-[x] T-004: Project structure setup
-[x] T-005: Initial documentation
+Phase 3 | Step 1: BACKEND DIRECTORY STRUCTURE
+---
+
+[ ] Phase 3 | Step 1.1 | Create core directories
+    [ ] mkdir -p backend/core/algorithms/{regression,classification,clustering}
+    [ ] mkdir -p backend/core/algorithms/tests
+    [ ] mkdir -p backend/api/routes
+    [ ] mkdir -p backend/models/{database,schemas}
+    [ ] Create __init__.py in all new directories
+
+[ ] Phase 3 | Step 1.2 | Verify structure
+    [ ] List backend/core/algorithms/ - confirm 3 algorithm folders
+    [ ] Verify all __init__.py files exist
+    [ ] Check that tests directory is empty (ready for tests)
+
+---
+
+Phase 3 | Step 2: REGRESSION ALGORITHMS (6 total)
+---
+
+[ ] Phase 3 | Step 2.1 | Simple Linear Regression
+    [ ] Create: backend/core/algorithms/regression/linear_regression.py
+    [ ] Implement: SimpleLinearRegression class
+    [ ] Implement: __init__(self)
+    [ ] Implement: fit(self, X: np.ndarray, y: np.ndarray) -> None
+    [ ] Implement: predict(self, X: np.ndarray) -> np.ndarray
+    [ ] Implement: score(self, X: np.ndarray, y: np.ndarray) -> float
+    [ ] Add: Gradient descent OR normal equation solver
+    [ ] Add: Calculate R², MSE, MAE, RMSE metrics
+    [ ] Add: Type hints on all methods
+    [ ] Add: Google-style docstrings
+    [ ] Create: backend/core/algorithms/tests/test_simple_linear_regression.py
+    [ ] Write: 10+ test cases (fit, predict, score, edge cases)
+    [ ] Test: Null/NaN values handling
+    [ ] Test: Single sample, multiple samples
+    [ ] Test: R² = 1.0 for perfect fit
+    [ ] Run: pytest test_simple_linear_regression.py -v
+    [ ] Verify: >90% coverage on module
+
+[ ] Phase 3 | Step 2.2 | Multiple Linear Regression
+    [ ] Add to: backend/core/algorithms/regression/linear_regression.py
+    [ ] Implement: MultipleLinearRegression class
+    [ ] Implement: Handle multiple features (X with n columns)
+    [ ] Implement: Feature scaling option (standardization)
+    [ ] Implement: Multicollinearity check (condition number)
+    [ ] Implement: Adjusted R² calculation
+    [ ] Create: Tests for multiple features with 10+ cases
+    [ ] Test: 2D, 3D, 5D data
+    [ ] Test: Correlated features detection
+    [ ] Run: pytest -v
+    [ ] Verify: >90% coverage
+
+[ ] Phase 3 | Step 2.3 | Polynomial Regression
+    [ ] Create: backend/core/algorithms/regression/polynomial_regression.py
+    [ ] Implement: PolynomialRegression class
+    [ ] Implement: Constructor with degree parameter
+    [ ] Implement: transform(X: np.ndarray) -> np.ndarray (polynomial features)
+    [ ] Implement: fit(X: np.ndarray, y: np.ndarray) -> None
+    [ ] Implement: predict(X: np.ndarray) -> np.ndarray
+    [ ] Add: Type hints + docstrings
+    [ ] Create: Tests for polynomial degrees 1-5
+    [ ] Test: Overfitting on degree 10+
+    [ ] Test: Feature transformation correctness
+    [ ] Run: pytest test_polynomial_regression.py -v
+    [ ] Verify: >90% coverage
+
+[ ] Phase 3 | Step 2.4 | Support Vector Regression (SVR)
+    [ ] Create: backend/core/algorithms/regression/svr.py
+    [ ] Implement: SVR class
+    [ ] Implement: Constructor with kernel, C, epsilon parameters
+    [ ] Implement: Kernel functions (linear, RBF, polynomial)
+    [ ] Implement: fit(X: np.ndarray, y: np.ndarray) -> None
+    [ ] Implement: predict(X: np.ndarray) -> np.ndarray
+    [ ] Add: Support vectors property/method
+    [ ] Add: Margin visualization hook
+    [ ] Create: Tests for different kernels
+    [ ] Test: Linear kernel
+    [ ] Test: RBF kernel
+    [ ] Test: Polynomial kernel
+    [ ] Run: pytest test_svr.py -v
+    [ ] Verify: >90% coverage
+
+[ ] Phase 3 | Step 2.5 | Decision Tree Regression
+    [ ] Create: backend/core/algorithms/regression/decision_tree.py
+    [ ] Implement: DecisionTreeRegressor class
+    [ ] Implement: Constructor with max_depth, min_samples_split
+    [ ] Implement: Binary split calculation (MSE reduction)
+    [ ] Implement: Recursive tree building algorithm
+    [ ] Implement: fit(X: np.ndarray, y: np.ndarray) -> None
+    [ ] Implement: predict(X: np.ndarray) -> np.ndarray
+    [ ] Add: Feature importance calculation
+    [ ] Add: Tree visualization support (return tree structure)
+    [ ] Create: Tests for different depths
+    [ ] Test: max_depth limits
+    [ ] Test: min_samples_split enforcement
+    [ ] Test: Feature importance values sum to 1.0
+    [ ] Run: pytest test_decision_tree_regression.py -v
+    [ ] Verify: >90% coverage
+
+[ ] Phase 3 | Step 2.6 | Random Forest Regression
+    [ ] Create: backend/core/algorithms/regression/random_forest.py
+    [ ] Implement: RandomForestRegressor class
+    [ ] Implement: Constructor with n_trees, max_depth, min_samples_split
+    [ ] Implement: Bootstrap sampling for each tree
+    [ ] Implement: fit(X: np.ndarray, y: np.ndarray) -> None
+    [ ] Implement: predict(X: np.ndarray) -> np.ndarray (average)
+    [ ] Add: Feature importance (aggregated from all trees)
+    [ ] Add: Out-of-bag error calculation
+    [ ] Create: Tests for convergence
+    [ ] Test: Single tree vs ensemble performance
+    [ ] Test: Feature importance stability
+    [ ] Test: n_estimators convergence
+    [ ] Run: pytest test_random_forest_regression.py -v
+    [ ] Verify: >90% coverage
+
+---
+
+Phase 3 | Step 3: CLASSIFICATION ALGORITHMS (6 total)
+---
+
+[ ] Phase 3 | Step 3.1 | Logistic Regression
+    [ ] Create: backend/core/algorithms/classification/logistic_regression.py
+    [ ] Implement: LogisticRegression class
+    [ ] Implement: Sigmoid function
+    [ ] Implement: Cross-entropy loss calculation
+    [ ] Implement: Gradient descent optimization
+    [ ] Implement: fit(X: np.ndarray, y: np.ndarray) -> None
+    [ ] Implement: predict(X: np.ndarray) -> np.ndarray (class labels)
+    [ ] Implement: predict_proba(X: np.ndarray) -> np.ndarray (probabilities)
+    [ ] Add: Multi-class support (one-vs-rest)
+    [ ] Create: Tests for binary and multi-class
+    [ ] Test: Class probability output
+    [ ] Test: Decision boundary correctness
+    [ ] Run: pytest test_logistic_regression.py -v
+    [ ] Verify: >90% coverage
+
+[ ] Phase 3 | Step 3.2 | K-Nearest Neighbors (KNN)
+    [ ] Create: backend/core/algorithms/classification/knn.py
+    [ ] Implement: KNN class
+    [ ] Implement: Constructor with k parameter
+    [ ] Implement: Distance metrics (Euclidean, Manhattan, Cosine)
+    [ ] Implement: fit(X: np.ndarray, y: np.ndarray) -> None (store training data)
+    [ ] Implement: predict(X: np.ndarray) -> np.ndarray (majority vote)
+    [ ] Create: Tests for different k values
+    [ ] Test: Different distance metrics
+    [ ] Test: Edge cases (k=1, k=n_samples)
+    [ ] Run: pytest test_knn.py -v
+    [ ] Verify: >90% coverage
+
+[ ] Phase 3 | Step 3.3 | Support Vector Machine (SVM)
+    [ ] Create: backend/core/algorithms/classification/svm.py
+    [ ] Implement: SVM class
+    [ ] Implement: Kernel functions (linear, RBF, polynomial)
+    [ ] Implement: fit(X: np.ndarray, y: np.ndarray) -> None
+    [ ] Implement: predict(X: np.ndarray) -> np.ndarray
+    [ ] Add: Support vector identification
+    [ ] Add: Margin visualization
+    [ ] Create: Tests for different kernels
+    [ ] Test: Binary classification
+    [ ] Test: Multi-class (one-vs-one)
+    [ ] Run: pytest test_svm.py -v
+    [ ] Verify: >90% coverage
+
+[ ] Phase 3 | Step 3.4 | Naive Bayes
+    [ ] Create: backend/core/algorithms/classification/naive_bayes.py
+    [ ] Implement: NaiveBayes class
+    [ ] Implement: Bayes theorem with independence assumption
+    [ ] Implement: fit(X: np.ndarray, y: np.ndarray) -> None
+    [ ] Implement: predict(X: np.ndarray) -> np.ndarray
+    [ ] Implement: predict_proba(X: np.ndarray) -> np.ndarray
+    [ ] Add: Laplace smoothing
+    [ ] Create: Tests for probability calculations
+    [ ] Test: Multi-class
+    [ ] Test: Smoothing correctness
+    [ ] Run: pytest test_naive_bayes.py -v
+    [ ] Verify: >90% coverage
+
+[ ] Phase 3 | Step 3.5 | Decision Tree Classifier
+    [ ] Create: backend/core/algorithms/classification/decision_tree.py
+    [ ] Implement: DecisionTreeClassifier class
+    [ ] Implement: Entropy/Gini impurity calculation
+    [ ] Implement: Information gain calculation
+    [ ] Implement: fit(X: np.ndarray, y: np.ndarray) -> None
+    [ ] Implement: predict(X: np.ndarray) -> np.ndarray
+    [ ] Add: Feature importance
+    [ ] Add: Tree structure visualization
+    [ ] Create: Tests for different criteria
+    [ ] Test: Entropy vs Gini
+    [ ] Test: Multi-class
+    [ ] Run: pytest test_decision_tree_classifier.py -v
+    [ ] Verify: >90% coverage
+
+[ ] Phase 3 | Step 3.6 | Random Forest Classifier
+    [ ] Create: backend/core/algorithms/classification/random_forest.py
+    [ ] Implement: RandomForestClassifier class
+    [ ] Implement: Bootstrap sampling
+    [ ] Implement: fit(X: np.ndarray, y: np.ndarray) -> None
+    [ ] Implement: predict(X: np.ndarray) -> np.ndarray (majority vote)
+    [ ] Implement: predict_proba(X: np.ndarray) -> np.ndarray
+    [ ] Add: Feature importance
+    [ ] Add: Out-of-bag error
+    [ ] Create: Tests for ensemble behavior
+    [ ] Test: Convergence with more trees
+    [ ] Test: Probability averages to valid distribution
+    [ ] Run: pytest test_random_forest_classifier.py -v
+    [ ] Verify: >90% coverage
+
+---
+
+Phase 3 | Step 4: CLUSTERING ALGORITHMS (3 total)
+---
+
+[ ] Phase 3 | Step 4.1 | K-Means
+    [ ] Create: backend/core/algorithms/clustering/kmeans.py
+    [ ] Implement: KMeans class
+    [ ] Implement: Constructor with k, max_iterations
+    [ ] Implement: fit(X: np.ndarray) -> None
+    [ ] Implement: predict(X: np.ndarray) -> np.ndarray (cluster assignment)
+    [ ] Implement: Lloyd's algorithm (assign → update → repeat)
+    [ ] Add: Silhouette score calculation
+    [ ] Add: Inertia (within-cluster variance)
+    [ ] Create: Tests for convergence
+    [ ] Test: Different k values
+    [ ] Test: Random initialization
+    [ ] Test: Silhouette score validity
+    [ ] Run: pytest test_kmeans.py -v
+    [ ] Verify: >90% coverage
+
+[ ] Phase 3 | Step 4.2 | Hierarchical Clustering
+    [ ] Create: backend/core/algorithms/clustering/hierarchical.py
+    [ ] Implement: HierarchicalClustering class
+    [ ] Implement: Constructor with linkage method (single, complete, average, Ward)
+    [ ] Implement: fit(X: np.ndarray) -> None
+    [ ] Implement: Build dendrogram structure
+    [ ] Implement: get_clusters(n_clusters: int) -> np.ndarray
+    [ ] Add: Dendrogram generation
+    [ ] Create: Tests for different linkage methods
+    [ ] Test: Dendrogram correctness
+    [ ] Test: Cluster extraction
+    [ ] Run: pytest test_hierarchical.py -v
+    [ ] Verify: >90% coverage
+
+[ ] Phase 3 | Step 4.3 | DBSCAN
+    [ ] Create: backend/core/algorithms/clustering/dbscan.py
+    [ ] Implement: DBSCAN class
+    [ ] Implement: Constructor with eps, min_samples
+    [ ] Implement: fit_predict(X: np.ndarray) -> np.ndarray
+    [ ] Implement: Epsilon-neighborhood search
+    [ ] Implement: Core point identification
+    [ ] Implement: Cluster expansion algorithm
+    [ ] Add: Noise point detection (label = -1)
+    [ ] Create: Tests for different eps values
+    [ ] Test: Core points detection
+    [ ] Test: Noise point handling
+    [ ] Run: pytest test_dbscan.py -v
+    [ ] Verify: >90% coverage
+
+---
+
+Phase 3 | Step 5: API ENDPOINTS (All Algorithms)
+---
+
+[ ] Phase 3 | Step 5.1 | Regression Routes
+    [ ] Create: backend/api/routes/regression_routes.py
+    [ ] Implement: POST /api/regression/train endpoint
+        [ ] Input: dataset_id, algorithm, parameters, features, target
+        [ ] Output: model_id, training_time, metrics
+        [ ] Validate input using Pydantic
+        [ ] Save model to MongoDB
+    [ ] Implement: POST /api/regression/predict endpoint
+        [ ] Input: model_id, data_points
+        [ ] Output: predictions, confidence_intervals
+        [ ] Load model from MongoDB
+        [ ] Handle model not found error
+    [ ] Implement: GET /api/regression/models endpoint
+        [ ] Output: list of trained models with metrics
+        [ ] Filter by user_id
+    [ ] Implement: POST /api/regression/evaluate endpoint
+        [ ] Input: model_id, test_data
+        [ ] Output: R², MSE, MAE, RMSE
+        [ ] Generate evaluation report
+    [ ] Implement: DELETE /api/regression/models/{model_id} endpoint
+        [ ] Delete model from MongoDB
+        [ ] Return success response
+    [ ] Add: Authentication checks on all endpoints
+    [ ] Add: Rate limiting
+    [ ] Add: Error handling + logging
+
+[ ] Phase 3 | Step 5.2 | Classification Routes
+    [ ] Create: backend/api/routes/classification_routes.py
+    [ ] Implement: POST /api/classification/train endpoint
+    [ ] Implement: POST /api/classification/predict endpoint (include probabilities)
+    [ ] Implement: GET /api/classification/models endpoint
+    [ ] Implement: POST /api/classification/evaluate endpoint
+        [ ] Output: Accuracy, Precision, Recall, F1, AUC-ROC
+        [ ] Generate confusion matrix
+    [ ] Implement: DELETE /api/classification/models/{model_id} endpoint
+    [ ] Add: All security + error handling
+
+[ ] Phase 3 | Step 5.3 | Clustering Routes
+    [ ] Create: backend/api/routes/clustering_routes.py
+    [ ] Implement: POST /api/clustering/train endpoint
+    [ ] Implement: GET /api/clustering/labels endpoint (cluster assignments)
+    [ ] Implement: GET /api/clustering/models endpoint
+    [ ] Implement: POST /api/clustering/evaluate endpoint
+        [ ] Output: Silhouette score, Inertia
+    [ ] Implement: DELETE /api/clustering/models/{model_id} endpoint
+    [ ] Add: All security + error handling
+
+---
+
+Phase 3 | Step 6: MONGODB MODELS & SCHEMAS
+---
+
+[ ] Phase 3 | Step 6.1 | Pydantic Schemas
+    [ ] Create: backend/models/schemas/regression_schema.py
+        [ ] RegressionTrainRequest schema
+        [ ] RegressionPredictRequest schema
+        [ ] RegressionResponse schema
+    [ ] Create: backend/models/schemas/classification_schema.py
+        [ ] ClassificationTrainRequest schema
+        [ ] ClassificationPredictRequest schema
+        [ ] ClassificationResponse schema (with probabilities)
+    [ ] Create: backend/models/schemas/clustering_schema.py
+        [ ] ClusteringTrainRequest schema
+        [ ] ClusteringPredictRequest schema
+        [ ] ClusteringResponse schema
+
+[ ] Phase 3 | Step 6.2 | MongoDB Document Models
+    [ ] Create: backend/models/database/regression_model.py
+        [ ] RegressionModel collection structure
+        [ ] Fields: model_id, user_id, algorithm, parameters, metrics, created_at
+    [ ] Create: backend/models/database/classification_model.py
+        [ ] ClassificationModel collection structure
+    [ ] Create: backend/models/database/clustering_model.py
+        [ ] ClusteringModel collection structure
+    [ ] Create: backend/models/database/dataset.py
+        [ ] Dataset collection (store uploaded data)
+    [ ] Create: backend/models/database/training_job.py
+        [ ] TrainingJob collection (track training history)
+
+---
+
+Phase 3 | Step 7: COMPREHENSIVE UNIT TESTS
+---
+
+[ ] Phase 3 | Step 7.1 | Run All Tests
+    [ ] pytest backend/core/algorithms/tests/ -v
+    [ ] Verify: All tests pass
+    [ ] Verify: >90% coverage on algorithms
+    [ ] pytest --cov=backend/core/algorithms --cov-report=html
+    [ ] Check: coverage report
+    [ ] Fix: Any coverage gaps <90%
+
+[ ] Phase 3 | Step 7.2 | Test Edge Cases for All Algorithms
+    [ ] Each algorithm test file must include:
+        [ ] Empty array test
+        [ ] Single sample test
+        [ ] Null/NaN value handling
+        [ ] Singular matrix test (for regression)
+        [ ] Large dataset performance test
+        [ ] Convergence verification
+        [ ] Metrics correctness validation
+
+---
+
+Phase 3 | Step 8: UI INTEGRATION
+---
+
+[ ] Phase 3 | Step 8.1 | Connect Frontend to Backend
+    [ ] Add API fetch calls to web-client lab pages
+    [ ] `/labs/regression/simple-linear` → connects to `/api/regression/train`
+    [ ] Add file upload component for datasets
+    [ ] Add parameter controls (sliders, inputs)
+    [ ] Add training button + progress indicator
+    [ ] Add results display (metrics, visualization)
+    [ ] Test: Training works end-to-end
+
+[ ] Phase 3 | Step 8.2 | Implement for All Lab Categories
+    [ ] Regression (6 pages)
+    [ ] Classification (6 pages)
+    [ ] Clustering (3 pages)
+    [ ] All use same lab-page-template.tsx
+    [ ] All have API connections working
+
+[ ] Phase 3 | Step 8.3 | Add Visualization
+    [ ] Display training metrics (loss curves, accuracy)
+    [ ] Show predictions on test data
+    [ ] For regression: scatter plot + fit line
+    [ ] For classification: confusion matrix
+    [ ] For clustering: cluster visualization
+    [ ] Export results functionality
+
+================================================================================
+COMPLETION CHECKLIST - PHASE 3
+================================================================================
+
+When all tasks above are complete, Phase 3 is DONE if:
+
+✅ Backend Completion
+    [ ] 15 algorithms implemented (6+6+3)
+    [ ] 150+ unit tests written
+    [ ] >90% code coverage on algorithms
+    [ ] All tests passing
+    [ ] All API endpoints working
+
+✅ Database & Models
+    [ ] MongoDB collections created
+    [ ] Pydantic schemas defined
+    [ ] Model persistence working
+    [ ] Training history tracked
+    [ ] Prediction history logged
+
+✅ API & Security
+    [ ] All 15 endpoints functional
+    [ ] Authentication required on all protected routes
+    [ ] Rate limiting active
+    [ ] Input validation on all requests
+    [ ] Error handling comprehensive
+    [ ] Logging without sensitive data
+
+✅ Frontend Integration
+    [ ] 15 lab pages connected to backend
+    [ ] Data upload working
+    [ ] Training controls functional
+    [ ] Results visualization working
+    [ ] Metrics display accurate
+    [ ] Export functionality works
+
+✅ Documentation
+    [ ] Docstrings on all algorithms
+    [ ] Type hints on all functions
+    [ ] README in each algorithm folder
+    [ ] API documentation (endpoints, parameters)
+    [ ] User guide for each lab
+
+✅ Quality Standards
+    [ ] No hardcoded secrets
+    [ ] No sklearn in core algorithms
+    [ ] Clean architecture maintained
+    [ ] Code follows project standards
+    [ ] Zero security vulnerabilities
+
+================================================================================
+PREVIOUS PHASES (COMPLETED)
+================================================================================
+
+[x] PHASE 0: Project Foundation
+[x] PHASE 1: Authentication System  
+[x] PHASE 2: Platform Structure (UI generation, Copilot setup)
 
 ================================================================================
 TECHNICAL DEBT & IMPROVEMENTS

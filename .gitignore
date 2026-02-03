@@ -56,3 +56,7 @@ Thumbs.db
 *.db
 V0_latest_UI
 no_need_commits/
+misc/
+LEARNING_GUIDE.md
+MASTER_ROADMAP.md
+TASKS.txt
