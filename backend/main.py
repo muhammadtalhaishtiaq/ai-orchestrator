@@ -11,6 +11,7 @@ from config import settings
 from database import db, connect_db, close_db
 from api.auth import router as auth_router  # Import auth routes
 from api.chat import router as chat_router  # Import chat routes
+from api.algorithms.linear_regression import router as lr_router  # Import Linear Regression routes
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -56,6 +57,7 @@ app.add_middleware(
 # Include routers
 app.include_router(auth_router, prefix="/api")  # Routes: /api/auth/*
 app.include_router(chat_router, prefix="/api")  # Routes: /api/chat/*
+app.include_router(lr_router, prefix="/api/algorithms")  # Routes: /api/algorithms/linear-regression/*
 
 # --- In-Memory Database ---
 # Structure: { session_id: [ {role: "user", content: "hi"}, ... ] }

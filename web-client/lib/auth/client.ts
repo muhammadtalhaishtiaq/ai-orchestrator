@@ -40,6 +40,7 @@ export async function login(email: string, password: string): Promise<AuthRespon
     body: JSON.stringify({ email, password }),
   });
 
+  //checking if password or email is wrong
   if (!response.ok) {
     throw new Error(await parseErrorMessage(response));
   }
@@ -95,7 +96,7 @@ async function parseErrorMessage(response: Response): Promise<string> {
       }
     }
     if (typeof (error as { message?: unknown }).message === "string") {
-      return (error as { message: string }).message;
+      return (error as unknown as { message: string }).message;
     }
   } catch {
     // ignore JSON parse errors

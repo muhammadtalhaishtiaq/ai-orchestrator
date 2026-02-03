@@ -133,17 +133,31 @@ const navStructure: NavItem[] = [
     label: 'System',
     icon: <Settings className="w-4 h-4" />,
     children: [
-    //   { label: 'Datasets', href: '/datasets', icon: <Database className="w-4 h-4" /> },
-    //   { label: 'Experiments', href: '/experiments', icon: <Beaker className="w-4 h-4" /> },
-    //   { label: 'Models', href: '/models', icon: <Box className="w-4 h-4" /> },
+      { label: 'Datasets', href: '/datasets', icon: <Database className="w-4 h-4" /> },
+      { label: 'Experiments', href: '/experiments', icon: <Beaker className="w-4 h-4" /> },
+      { label: 'Models', href: '/models', icon: <Box className="w-4 h-4" /> },
       { label: 'Settings', href: '/settings', icon: <Settings className="w-4 h-4" /> },
     ],
   },
 ];
 
+function shouldItemBeOpen(item: NavItem, pathname: string): boolean {
+  // Check if this item's href matches the current pathname
+  if (item.href === pathname) {
+    return true;
+  }
+  
+  // Check if any child recursively matches
+  if (item.children) {
+    return item.children.some(child => shouldItemBeOpen(child, pathname));
+  }
+  
+  return false;
+}
+
 function SidebarItem({ item, level = 0 }: { item: NavItem; level?: number }) {
   const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState(level === 0);
+  const [isOpen, setIsOpen] = useState(() => shouldItemBeOpen(item, pathname));
   const hasChildren = item.children && item.children.length > 0;
   const isActive = item.href === pathname;
 
