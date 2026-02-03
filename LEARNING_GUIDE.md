@@ -456,16 +456,50 @@ This keeps UI code clean and avoids tight coupling between state, API, and stora
 
 ## Phase 1: Authentication
 
-**Status:** 🔄 In Progress  
-**Date:** January 24, 2026
+**Status:** ✅ Complete  
+**Date:** February 2, 2026
 
-*(Will be filled after we build it)*
+### What We Built
+- JWT-based auth with httpOnly cookies
+- Middleware-based route protection (no page flash)
+- Auth Provider for global state
+- Secure password hashing (bcrypt)
+
+### Auth Flow (Backend + Frontend)
+
+```
+Client Login/Register → Backend returns JWT → httpOnly cookie set
+Middleware checks cookie → routes allowed/blocked before render
+```
 
 ---
 
 ## Phase 2: Classification & Intent Router
 
-**Status:** ⬜ Not Started
+**Status:** 🔄 In Progress
+
+### Phase 2 (Chat MVP) Architecture
+
+Backend layers (clean separation):
+
+```
+API (routes) → Services (business logic) → Repositories (DB access)
+                ↓
+            Schemas + Dependencies + Core
+```
+
+Chat endpoints (auth-protected):
+
+- POST /api/chat/sessions
+- GET /api/chat/sessions
+- GET /api/chat/sessions/{session_id}/messages
+- POST /api/chat/message
+
+Frontend integration:
+
+- lib/chat client + types
+- Chat UI sends messages → API → DB persistence
+- Responses return to UI (assistant placeholder for now)
 
 ### What We'll Learn
 - How classification algorithms work

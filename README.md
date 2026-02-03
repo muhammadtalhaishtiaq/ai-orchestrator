@@ -58,7 +58,8 @@ project_nebula/
 	├── app/                 # Pages
 	├── components/          # UI components
 	└── lib/
-		└── auth/             # Auth client + storage + types
+		├── auth/             # Auth client + storage + types
+		└── chat/             # Chat client + types
 ```
 
 ## Current Status
@@ -69,8 +70,8 @@ project_nebula/
 - [x] MongoDB connection
 - [x] Basic API structure
 - [x] CI/CD pipeline
-- [ ] User authentication
-- [ ] Chat functionality
+- [x] User authentication
+- [x] Chat MVP (sessions + message storage)
 - [ ] First ML model integration
 - [ ] ...and like 20 more things
 
