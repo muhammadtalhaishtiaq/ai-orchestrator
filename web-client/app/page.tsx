@@ -1,13 +1,14 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import Sidebar, { chatHistoryData } from "@/components/sidebar"
 import ChatSection from "@/components/chat-section"
 import SystemInternals from "@/components/system-internals"
+import { createSession, sendMessage, listSessions, getSessionMessages } from "@/lib/chat"
 
 interface Message {
   id: string
-  role: "user" | "ai"
+  role: "user" | "assistant"
   content: string
   timestamp: string
   hasChart?: boolean
@@ -16,29 +17,64 @@ interface Message {
 export default function ProjectNebula() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [activeChatId, setActiveChatId] = useState<string | null>(null)
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
   const [isNewChat, setIsNewChat] = useState(true)
+  const [sessions, setSessions] = useState<{ _id?: string; id?: string; title?: string; created_at?: string }[]>([])
+
+  useEffect(() => {
+    listSessions()
+      .then(setSessions)
+      .catch(() => setSessions([]))
+  }, [])
 
   // Handle selecting a chat from sidebar
   const handleSelectChat = useCallback((chatId: string | null) => {
     if (chatId === null) {
       setActiveChatId(null)
+      setActiveSessionId(null)
       setMessages([])
       setIsNewChat(true)
       return
     }
 
-    // Find the chat in history
+    const realSession = sessions.find(s => (s.id || s._id) === chatId)
+    if (realSession) {
+      setActiveChatId(chatId)
+      setActiveSessionId(chatId)
+      setIsNewChat(false)
+
+      getSessionMessages(chatId)
+        .then((msgs) => {
+          const displayMessages: Message[] = msgs.map((msg, index) => ({
+            id: `${chatId}-${index}`,
+            role: msg.role === "assistant" ? "assistant" : "user",
+            content: msg.content,
+            timestamp: msg.timestamp
+              ? new Date(msg.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+              : "",
+          }))
+          setMessages(displayMessages)
+        })
+        .catch(() => {
+          setMessages([])
+        })
+
+      return
+    }
+
+    // Find the chat in history (static demo data)
     for (const group of chatHistoryData) {
       const chat = group.chats.find(c => c.id === chatId)
       if (chat && chat.messages) {
         setActiveChatId(chatId)
+        setActiveSessionId(null) // demo chat only (no backend session)
         setIsNewChat(false)
         
         // Convert stored messages to display format
         const displayMessages: Message[] = chat.messages.map((msg, index) => ({
           id: `${chatId}-${index}`,
-          role: msg.role,
+          role: msg.role === "ai" ? "assistant" : "user",
           content: msg.content,
           timestamp: chat.date === "Today" ? "10:42 AM" : "Yesterday",
           hasChart: msg.role === "ai" && chatId === "1" && index === 1 // Show chart for first chat's AI response
@@ -48,17 +84,31 @@ export default function ProjectNebula() {
         return
       }
     }
-  }, [])
+  }, [sessions])
 
   // Handle new chat
   const handleNewChat = useCallback(() => {
     setActiveChatId(null)
+    setActiveSessionId(null)
     setMessages([])
     setIsNewChat(true)
   }, [])
 
   // Handle sending a message
-  const handleSendMessage = useCallback((content: string) => {
+  const handleSendMessage = useCallback(async (content: string) => {
+    let sessionId = activeSessionId
+
+    if (!sessionId) {
+      const newSession = await createSession()
+      sessionId = newSession.session_id
+      setActiveSessionId(sessionId)
+      setActiveChatId(sessionId)
+      setSessions((prev) => [
+        { id: sessionId, title: "New Chat", created_at: newSession.created_at },
+        ...prev,
+      ])
+    }
+
     const newUserMessage: Message = {
       id: Date.now().toString(),
       role: "user",
@@ -69,17 +119,18 @@ export default function ProjectNebula() {
     setMessages(prev => [...prev, newUserMessage])
     setIsNewChat(false)
 
-    // Simulate AI response
-    setTimeout(() => {
-      const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "ai",
-        content: "I'm processing your request. This is a simulated response from Project Nebula AI. The hybrid orchestrator is analyzing your query using advanced machine learning models to provide you with accurate insights and recommendations.",
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      }
-      setMessages(prev => [...prev, aiResponse])
-    }, 1500)
-  }, [])
+    const response = await sendMessage(sessionId, content)
+
+    const aiResponse: Message = {
+      id: (Date.now() + 1).toString(),
+      role: "assistant",
+      content: response.response,
+      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      hasChart: response.has_chart,
+    }
+
+    setMessages(prev => [...prev, aiResponse])
+  }, [activeSessionId])
 
   return (
     <div className="h-screen bg-[#0a0e1a] relative overflow-hidden">
@@ -101,6 +152,7 @@ export default function ProjectNebula() {
           onSelectChat={handleSelectChat}
           onNewChat={handleNewChat}
           activeChatId={activeChatId}
+          sessions={sessions}
         />
         
         {/* Main Area */}

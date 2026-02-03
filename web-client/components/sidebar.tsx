@@ -142,9 +142,10 @@ interface SidebarProps {
   onSelectChat: (chatId: string | null) => void
   onNewChat: () => void
   activeChatId: string | null
+  sessions?: { _id?: string; id?: string; title?: string; created_at?: string }[]
 }
 
-export default function Sidebar({ isCollapsed, onToggle, onSelectChat, onNewChat, activeChatId }: SidebarProps) {
+export default function Sidebar({ isCollapsed, onToggle, onSelectChat, onNewChat, activeChatId, sessions }: SidebarProps) {
   const { user, logout } = useAuth()
   const [hoveredChat, setHoveredChat] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
@@ -152,18 +153,30 @@ export default function Sidebar({ isCollapsed, onToggle, onSelectChat, onNewChat
 
   // Filter chat history based on search query
   const filteredChatHistory = useMemo(() => {
-    if (!searchQuery.trim()) return chatHistoryData
-    
+    const hasSessions = sessions && sessions.length > 0
+    const source = hasSessions
+      ? [
+          {
+            label: "Recent",
+            chats: sessions.map((s, index) => ({
+              id: s.id || s._id || `session-${index}`,
+              title: s.title || "New Chat",
+              date: s.created_at ? new Date(s.created_at).toLocaleDateString() : "",
+            })),
+          },
+        ]
+      : chatHistoryData
+
+    if (!searchQuery.trim()) return source
+
     const query = searchQuery.toLowerCase()
-    return chatHistoryData
+    return source
       .map(group => ({
         ...group,
-        chats: group.chats.filter(chat => 
-          chat.title.toLowerCase().includes(query)
-        )
+        chats: group.chats.filter(chat => chat.title.toLowerCase().includes(query))
       }))
       .filter(group => group.chats.length > 0)
-  }, [searchQuery])
+  }, [searchQuery, sessions])
 
   const handleNewChat = () => {
     setSearchQuery("")

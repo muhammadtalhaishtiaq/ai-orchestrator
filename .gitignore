@@ -54,4 +54,5 @@ Thumbs.db
 # ============ Misc ============
 *.sqlite3
 *.db
+V0_latest_UI
 no_need_commits/

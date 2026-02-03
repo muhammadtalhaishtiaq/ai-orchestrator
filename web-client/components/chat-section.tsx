@@ -8,7 +8,7 @@ import RevenueChart from "@/components/revenue-chart"
 
 interface Message {
   id: string
-  role: "user" | "ai"
+  role: "user" | "assistant"
   content: string
   timestamp: string
   hasChart?: boolean
