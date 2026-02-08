@@ -33,6 +33,10 @@ build/
 *.swp
 *.swo
 .DS_Store
+.opencode/
+brain/
+agents.md
+opencode.json
 
 # ============ Testing ============
 .coverage
@@ -61,3 +65,4 @@ MASTER_ROADMAP.md
 COLAB_ARCHITECTURE.md
 TASKS.txt
 algos
+_older/
