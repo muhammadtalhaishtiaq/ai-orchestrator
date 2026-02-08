@@ -1,356 +1,131 @@
-# Project Nebula 🌌
+# AI Orchestrator
 
-An interactive AI/ML learning platform where you implement 40+ algorithms from scratch and learn how they actually work.
+Your complete A-Z guide to machine learning and AI. From linear regression to building AI agents — everything in runnable Jupyter notebooks.
 
-**Status**: Core Algorithm Laboratory (Active)  
-<!-- **Date**: February 2, 2026   -->
-**Mission**: Don't just use ML libraries - understand how they work by building them
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/)
 
 ---
 
-## 📌 What is Project Nebula?
+## How to Use This Repo
 
-Project Nebula is an interactive learning platform that lets you:
+Every notebook is self-contained. Just click the "Open in Colab" badge at the top of any notebook and run it. No setup needed.
 
-1. **Implement** 40+ ML algorithms from scratch (regression, classification, clustering, neural networks, transformers, generative models, reinforcement learning)
-2. **Visualize** how each algorithm works with real-time animations
-3. **Test** on real datasets with interactive controls
-4. **Build** a portfolio of ML projects you actually understand
-5. **Learn** deep ML engineering (not just theory)
-
-**Core Philosophy**: "Don't use sklearn - build sklearn"
-
----
-
-## 🚀 Current Status
-
-| Component | Status | Completion |
-|-----------|--------|-----------|
-| **Phase 1**: Foundation (Auth, Backend Setup) | ✅ DONE |
-| **Phase 2**: Platform Structure | ✅ DONE |
-| **Phase 3**: Core Algorithms (Regression, Classification, Clustering) | 🔄 ACTIVE | 0% |
-| **Phase 4-8**: Neural Networks, Transformers, Generative, RL | ⏳ PENDING | 0% |
-
-### What's Done
-- ✅ User authentication system (JWT + httpOnly cookies)
-- ✅ Backend layered architecture (API → Services → Repositories)
-- ✅ MongoDB integration with async Motor driver
-- ✅ 30+ lab routes with persistent sidebar navigation
-- ✅ UI generated (landing page + dashboard + all lab routes)
-<!-- - ✅ Copilot instructions in VS Code for consistent development -->
-- ✅ Security & coding standards documented
-
-### What's Next (Phase 3)
-- 🔄 Implement 15 core algorithms:
-  - 6 regression algorithms (simple linear, multiple linear, polynomial, SVR, decision tree, random forest)
-  - 6 classification algorithms (logistic, KNN, SVM, naive bayes, decision tree, random forest)
-  - 3 clustering algorithms (K-means, hierarchical, DBSCAN)
-- 🔄 Create API endpoints for training and prediction
-- 🔄 Write 150+ unit tests with >90% coverage
-- 🔄 Connect frontend lab pages to backend
-- 🔄 Add visualization for algorithm results
-
----
-
-## 💻 Tech Stack
-
-**Frontend**:
-- Next.js 15 + React 18 + TypeScript
-- Tailwind CSS + shadcn/ui + Framer Motion
-- Real-time visualizations
-
-**Backend**:
-- FastAPI (async Python web framework)
-- MongoDB + Motor (async driver)
-- Pydantic (validation)
-- Numpy + Pandas (no sklearn in core algorithms)
-
-**Infrastructure**:
-- JWT authentication in httpOnly cookies
-- Bcrypt password hashing (12+ rounds)
-- Rate limiting on sensitive endpoints
-- Structured logging without secrets
-- Cloud-ready deployment
-
-**Development**:
-- VS Code
-- Pytest for testing (>90% coverage target)
-- Automated checks and validations
-
----
-
-## 🏗️ Architecture
-
-### Backend Layered Architecture
-
-```
-HTTP Request
-    ↓
-API Routes (Controllers)     # Input validation, HTTP responses
-    ↓
-Service Layer               # Business logic, algorithm orchestration
-    ↓
-Repository Layer            # Data access patterns
-    ↓
-MongoDB Collections         # Persistent data storage
-```
-
-**Key Rules**:
-- API routes are thin (no database logic)
-- Services contain all business logic
-- Repositories handle all data access
-- No shortcuts through layers
-
-### Frontend Structure
-
-```
-web-client/
-├── app/
-│   ├── page.tsx (Landing)
-│   ├── dashboard/ (Dashboard home)
-│   ├── labs/ (30+ algorithm labs)
-│   │   ├── regression/ (6 algorithms)
-│   │   ├── classification/ (6 algorithms)
-│   │   ├── clustering/ (3 algorithms)
-│   │   ├── neural-networks/ (Phase 4)
-│   │   ├── transformers/ (Phase 5)
-│   │   ├── nlp/ (Phase 6)
-│   │   ├── generative/ (Phase 7)
-│   │   └── reinforcement-learning/ (Phase 8)
-│   └── auth/ (login, register, profile, settings)
-├── components/
-│   ├── sidebar.tsx (Navigation)
-│   ├── lab-page-template.tsx (Reusable lab page)
-│   └── ui/ (shadcn/ui components)
-└── hooks/ (useToast, useMobile)
-```
-
----
-
-## 📚 40+ Algorithm Taxonomy
-
-### Phase 3: Core Algorithms (Current)
-- **Regression** (6): Simple Linear, Multiple Linear, Polynomial, SVR, Decision Tree, Random Forest
-- **Classification** (6): Logistic, KNN, SVM, Naive Bayes, Decision Tree, Random Forest
-- **Clustering** (3): K-Means, Hierarchical, DBSCAN
-
-### Phase 4: Neural Networks
-- Neuron Basics, ANN, CNN, RNN/LSTM, ResNet
-
-### Phase 5: Transformers & Modern AI
-- Attention, Tokenization, Encoder-Decoder, LLM Utilities
-
-### Phase 6: NLP
-- Text Preprocessing, TF-IDF & BoW, Embeddings
-
-### Phase 7: Generative Models
-- VAE, GAN, Diffusion Models
-
-### Phase 8: Reinforcement Learning
-- Q-Learning, DQN, Policy Gradients
-
----
-
-## 🔒 Security Standards
-
-- **Passwords**: Bcrypt with 12+ rounds
-- **Tokens**: JWT in httpOnly cookies (not localStorage)
-- **Validation**: Pydantic on all endpoints
-- **Rate Limiting**: 100/min general, 5/15min login, 5/hour training
-- **Logging**: Structured logs (zero sensitive data)
-- **Configuration**: Environment variables only (no hardcoded secrets)
-
----
-
-## 📋 How to Contribute / Extend
-
-### Adding a New Algorithm (Example: Simple Linear Regression)
-
-1. **Create the algorithm file**:
-   ```bash
-   touch backend/core/algorithms/regression/linear_regression.py
-   ```
-
-2. **Implement with type hints + docstrings**:
-   ```python
-   class SimpleLinearRegression:
-       """Simple linear regression using normal equation or gradient descent."""
-       
-       def fit(self, X: np.ndarray, y: np.ndarray) -> None:
-           """Fit the model to training data."""
-           pass
-       
-       def predict(self, X: np.ndarray) -> np.ndarray:
-           """Predict using the trained model."""
-           pass
-   ```
-
-3. **Write 10+ test cases**:
-   ```bash
-   touch backend/core/algorithms/tests/test_simple_linear_regression.py
-   ```
-
-4. **Create API endpoint**:
-   ```bash
-   echo "POST /api/regression/train" >> backend/api/routes/regression_routes.py
-   ```
-
-5. **Connect to frontend**:
-   - Lab page: `web-client/app/labs/regression/simple-linear/page.tsx`
-   - Uses `lab-page-template.tsx` component
-   - Add upload + parameter controls
-   - Display results
-
-<!-- **See TASKS.txt for detailed step-by-step tasks.** -->
-
----
-
-<!-- ## 📖 Documentation -->
-
-<!-- - **[MASTER_ROADMAP.md](MASTER_ROADMAP.md)**: Complete project vision, all 40+ algorithms, phases 1-8 -->
-<!-- - **[TASKS.txt](TASKS.txt)**: Phase 3 detailed task breakdown with checkboxes -->
-<!-- - **[.vscode/copilot-instructions.md](.vscode/copilot-instructions.md)**: Auto-loaded Copilot context -->
-<!-- - **[PROJECT_NEBULA.md](PROJECT_NEBULA.md)**: Original consolidated reference (being merged) -->
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js 18+ (frontend)
-- Python 3.10+ (backend)
-- MongoDB Atlas account (free tier works)
-
-### Backend Setup
+If you want to run locally:
 ```bash
-cd backend
-python -m venv venv
-source venv/Scripts/activate  # Windows
+git clone https://github.com/muhammadtalhaishtiaq/project-nabula.git
+cd project-nabula
 pip install -r requirements.txt
-python main.py  # Runs on http://localhost:8000
-```
-
-### Frontend Setup
-```bash
-cd web-client
-npm install
-npm run dev  # Runs on http://localhost:3000
-```
-
-### Environment Variables
-Create `.env` in backend/:
-```
-MONGO_URI=mongodb+srv://user:pass@cluster.mongodb.net/
-JWT_SECRET=your-secret-key-here
-OPENAI_API_KEY=sk-...  # Optional, for future AI features
+jupyter notebook
 ```
 
 ---
 
-## ⚡ Key Features
+## 12-Week Learning Path
 
-- **Learning-Focused**: We use ML libraries in core workflows while also implementing algorithms from scratch to understand how they work
-- **Type Safe**: Full type hints on every function
-- **Well Tested**: 150+ unit tests with >90% coverage target
-- **Documented**: Google-style docstrings on all code
-- **Secure**: Bcrypt, JWT, httpOnly cookies, rate limiting
-- **Clean Architecture**: Layered design, no shortcuts
-- **Visual Learning**: Interactive parameter controls and result visualization
-- **Portfolio Ready**: Export code and results to showcase on GitHub/LinkedIn
+I've organized everything into a weekly schedule. If you spend ~5-7 hours per week, you can go from zero to job-ready in 12 weeks.
 
----
+| Week | Topics | Folders |
+|------|--------|---------|
+| **Week 0** | Python refresher, NumPy, Pandas basics | `00-foundations/` |
+| **Week 1** | Data cleaning, handling missing values, encoding | `01-data-preprocessing/` |
+| **Week 2** | EDA, statistics, visualization with matplotlib/seaborn | `02-exploratory-data-analysis/` |
+| **Week 3** | Feature engineering, selection, scaling | `03-feature-engineering/` |
+| **Week 4** | Linear, polynomial, tree-based regression | `04-regression/` |
+| **Week 5** | Logistic regression, SVM, KNN, Naive Bayes | `05-classification/` |
+| **Week 6** | K-Means, hierarchical, DBSCAN + model evaluation | `06-clustering/`, `08-model-evaluation/` |
+| **Week 7** | PCA, t-SNE, ensemble methods | `07-dimensionality-reduction/`, `09-ensemble-methods/` |
+| **Week 8** | Neural network fundamentals, CNNs | `10-neural-networks/` |
+| **Week 9** | RNNs, attention, transformers | `10-neural-networks/rnn/`, `11-attention-transformers/` |
+| **Week 10** | NLP basics, text processing, embeddings | `12-natural-language-processing/` |
+| **Week 11** | LLMs, RAG, AI agents | `14-large-language-models/`, `15-retrieval-augmented-generation/`, `16-ai-agents/` |
+| **Week 12** | MLOps, deployment, capstone project | `18-mlops/`, `20-cloud-deployment/`, `22-end-to-end-projects/` |
 
-## 📊 Success Criteria
-<!-- **Phase 3 Complete When**:
-- ✅ 15 algorithms implemented and tested
-- ✅ 150+ unit tests passing with >90% coverage
-- ✅ All API endpoints functional
-- ✅ UI lab pages connected to backend
-- ✅ Results visualization working
-- ✅ Zero security vulnerabilities -->
-
-**Full Project Complete When**:
-- ✅ 40+ algorithms across all 8 phases
-- ✅ 400+ unit tests with >85% coverage
-- ✅ Full UI with visualizations
-- ✅ Export and portfolio features
-- ✅ Production-ready observability
+> **Tip**: Don't skip Week 0-3. Most ML bugs come from bad data, not bad models.
 
 ---
 
-## 🎯 Next Steps
+## What's Inside
 
-<!-- 1. Check [TASKS.txt](TASKS.txt) for Phase 3 detailed breakdown
-2. Start with Phase 3 Step 1: Create backend directory structure
-3. Implement SimpleLinearRegression first
-4. Write tests as you go
-5. Connect to API endpoints
-6. Test end-to-end with frontend -->
-
-<!-- **See [MASTER_ROADMAP.md](MASTER_ROADMAP.md) for complete project vision.** -->
-
----
-
-## 📝 License
-
-Personal learning project - feel free to fork and learn!
-
----
-
-**Built with ❤️ and a lot of curiosity about how things really work.**
-│   ├── schemas/             # Pydantic request/response models
-│   ├── dependencies/        # FastAPI dependencies (auth)
-│   ├── core/                # Security helpers (JWT, hashing)
-│   ├── auth/                # Legacy wrappers (backward compatibility)
-│   └── main.py              # App entry
-├── ai-engine/               # ML modules
-└── web-client/
-	├── app/                 # Pages
-	├── components/          # UI components
-	└── lib/
-		├── auth/             # Auth client + storage + types
-		└── chat/             # Chat client + types
+```
+00-foundations/              → Python, NumPy, Pandas, Math refresher
+01-data-preprocessing/       → Cleaning, encoding, scaling
+02-exploratory-data-analysis/→ Stats, visualization, insights
+03-feature-engineering/      → Creating and selecting features
+04-regression/               → Linear, polynomial, SVR, trees
+05-classification/           → Logistic, SVM, KNN, Naive Bayes, trees
+06-clustering/               → K-Means, hierarchical, DBSCAN
+07-dimensionality-reduction/ → PCA, t-SNE, LDA
+08-model-evaluation/         → Metrics, cross-validation, tuning
+09-ensemble-methods/         → Bagging, boosting, stacking
+10-neural-networks/          → ANNs, CNNs, RNNs, architectures
+11-attention-transformers/   → Self-attention, BERT, GPT concepts
+12-natural-language-processing/ → Text processing, embeddings, sentiment
+13-computer-vision/          → Image classification, object detection
+14-large-language-models/    → Fine-tuning, prompting, local LLMs
+15-retrieval-augmented-generation/ → Vector DBs, RAG pipelines
+16-ai-agents/                → Tool use, chains, autonomous agents
+17-reinforcement-learning/   → Q-learning, policy gradients, DQN
+18-mlops/                    → Experiment tracking, versioning
+19-data-engineering/         → Pipelines, ETL, streaming
+20-cloud-deployment/         → AWS/GCP/Azure, Docker, APIs
+21-production-best-practices/→ Monitoring, testing, security
+22-end-to-end-projects/      → Full projects from data to deployment
 ```
 
-## Current Status
+---
 
-🚧 **Very much a work in progress** 🚧
+## Notebook Format
 
-- [x] Project setup
-- [x] MongoDB connection
-- [x] Basic API structure
-- [x] CI/CD pipeline
-- [x] User authentication
-- [x] Chat MVP (sessions + message storage)
-- [ ] First ML model integration
-- [ ] ...and like 20 more things
+Every notebook follows the same structure so you know what to expect:
 
-## Running Locally
+1. **What you'll learn** — quick overview (2 min read)
+2. **The concept** — theory without the fluff
+3. **Setup** — imports and data loading
+4. **Implementation** — the actual code, step by step
+5. **Results** — interpret what we got
+6. **Visualization** — see it working
+7. **Your turn** — exercises to try
 
-```bash
-# Backend
-cd backend
-python -m venv venv
-venv\Scripts\activate  # Windows
-pip install -r requirements.txt
-uvicorn main:app --reload
-
-# Frontend
-cd web-client
-pnpm install
-pnpm dev
-```
-
-You'll need a `.env` file with MongoDB URI and OpenAI key. Not sharing mine, get your own 😄
-
-<!-- ## Learning Journey
-
-I'm documenting what I learn as I build. Check out [LEARNING_GUIDE.md](./LEARNING_GUIDE.md) if you're curious. -->
-
-## Will this ever be finished?
-
-I hope so! But that's the fun part, no?
+Each notebook takes ~15-20 minutes to complete.
 
 ---
 
-*Built with ☕ and questionable life choices*
+## Progress Tracker
+
+Use this to track what you've finished:
+
+- [ ] Week 0: Foundations
+- [ ] Week 1: Data Preprocessing
+- [ ] Week 2: EDA
+- [ ] Week 3: Feature Engineering
+- [ ] Week 4: Regression
+- [ ] Week 5: Classification
+- [ ] Week 6: Clustering & Evaluation
+- [ ] Week 7: Dimensionality Reduction & Ensembles
+- [ ] Week 8: Neural Networks
+- [ ] Week 9: RNNs & Transformers
+- [ ] Week 10: NLP
+- [ ] Week 11: LLMs, RAG & Agents
+- [ ] Week 12: MLOps & Capstone
+
+---
+
+## Contributing
+
+Found a bug? Have a better explanation? PRs are welcome.
+
+Just keep the same notebook format and make sure everything runs in Colab without errors.
+
+---
+
+## Why I Made This
+
+I was tired of scattered tutorials, YouTube videos that skip the hard parts, and courses that cost $500 to tell you what's in the sklearn docs.
+
+This is everything I wish existed when I started learning ML. Free, practical, and actually complete.
+
+---
+
+## License
+
+MIT — do whatever you want with it.
