@@ -12,8 +12,8 @@ Every notebook is self-contained. Just click the "Open in Colab" badge at the to
 
 If you want to run locally:
 ```bash
-git clone https://github.com/muhammadtalhaishtiaq/project-nabula.git
-cd project-nabula
+git clone https://github.com/muhammadtalhaishtiaq/ai-orchestrator.git
+cd ai-orchestrator
 pip install -r requirements.txt
 jupyter notebook
 ```
