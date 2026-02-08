@@ -28,17 +28,17 @@ export default function VisualizationSection({
   ];
 
   return (
-    <div className="lg:col-span-1 rounded-lg border border-cyan-500/20 bg-[#1a1f2e] p-6">
-      <h2 className="text-xl font-semibold mb-4">📊 Visualization</h2>
+    <div className="rounded-lg border border-cyan-500/20 bg-[#1a1f2e] p-3">
+      <h2 className="text-lg font-semibold mb-2">📊 Visualization</h2>
       
-      {/* Chart Selector */}
+      {/* Chart Selector - Compact */}
       {trainingResult && (
-        <div className="mb-4 flex flex-wrap gap-2">
+        <div className="mb-2 flex flex-wrap gap-1">
           {chartOptions.map((option) => (
             <button
               key={option.value}
               onClick={() => setChartType(option.value)}
-              className={`px-3 py-1.5 rounded-lg text-xs transition-colors ${
+              className={`px-2 py-1 rounded text-xs transition-colors ${
                 chartType === option.value
                   ? 'bg-cyan-600 text-white border border-cyan-400'
                   : 'bg-gray-800 text-gray-400 border border-gray-700 hover:border-cyan-500/50'
@@ -51,7 +51,7 @@ export default function VisualizationSection({
         </div>
       )}
 
-      <div className="bg-gray-900 rounded-lg border border-cyan-500/10">
+      <div className="bg-gray-900 rounded border border-cyan-500/10 h-64">
         {trainingResult ? (
           trainingResult.is_multi_feature ? (
             <div className="h-64 flex items-center justify-center">
@@ -95,15 +95,15 @@ export default function VisualizationSection({
 
       {/* Chart Description */}
       {trainingResult && (
-        <div className="mt-3 p-2 bg-gray-900 rounded text-xs text-gray-400">
+        <div className="mt-2 p-1.5 bg-gray-900 rounded text-xs text-gray-400">
           {chartType === 'regression' && (
-            <p>Cyan dots = data points | Pink line = fitted regression model</p>
+            <p>Cyan dots = data | Pink line = fitted model</p>
           )}
           {chartType === 'residuals' && (
-            <p>Orange dots = prediction errors. Points closer to center line = better predictions</p>
+            <p>Orange dots = errors | Center line = perfect</p>
           )}
           {chartType === 'prediction' && (
-            <p>Purple dots = predictions | Green line = perfect predictions. Points on line = perfect match</p>
+            <p>Purple = predictions | Green line = perfect match</p>
           )}
         </div>
       )}

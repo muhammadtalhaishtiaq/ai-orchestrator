@@ -18,6 +18,12 @@ export interface TrainingResult {
   samples_trained: number;
   samples_tested: number;
   n_features: number;
+  condition_number: number;
+  has_multicollinearity: boolean;
+  standardized_coefficients: number[];
+  y_test: number[];
+  y_pred: number[];
+  residuals: number[];
 }
 
 export interface CSVValidationResult {

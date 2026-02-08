@@ -171,7 +171,7 @@ export default function MultipleLinearRegressionPage() {
     } finally {
       setIsTraining(false);
     }
-  }, [csvData, selectedFeatures, targetColumn, toast]);
+  }, [datasetId, currentDataset, selectedDataset, selectedFeatures, targetColumn, toast]);
 
   const handleReset = useCallback(() => {
     setTrainingResult(null);
@@ -226,9 +226,9 @@ export default function MultipleLinearRegressionPage() {
         {/* Learning Guide */}
         <LearningGuide isOpen={showLearning} onToggle={setShowLearning} />
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Data Section */}
+        {/* Main Content - Vertical Stacked Layout */}
+        <div className="space-y-6">
+          {/* Section 1: Data Upload & Feature Selection (Top) */}
           <DataSection
             currentDataset={currentDataset}
             selectedDataset={selectedDataset}
@@ -246,10 +246,10 @@ export default function MultipleLinearRegressionPage() {
             onReset={handleReset}
           />
 
-          {/* Results Section */}
+          {/* Section 2: Model Training Results (Middle - Full Width) */}
           <ResultsSection trainingResult={trainingResult} />
 
-          {/* Prediction Section */}
+          {/* Section 3: Test/Predict on Trained Model (Bottom) */}
           <PredictionSection
             trainingResult={trainingResult}
             selectedFeatures={selectedFeatures}

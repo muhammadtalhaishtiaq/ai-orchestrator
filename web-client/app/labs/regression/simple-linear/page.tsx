@@ -119,7 +119,7 @@ export default function SimpleLinearRegressionPage() {
         <LearningGuide isOpen={showLearning} onToggle={setShowLearning} />
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid" style={{ marginBottom: '1%' }}>
           {/* Data Input Section */}
           <DataSection
             currentDataset={currentDataset}
@@ -138,21 +138,24 @@ export default function SimpleLinearRegressionPage() {
             formatNumber={formatNumber}
           />
 
-          {/* Visualization Section - Always visible */}
+        </div>
+
+         <div className="grid" style={{ marginBottom: '1%' }}>
           <VisualizationSection 
             trainingResult={trainingResult}
             featureColumn={featureColumn}
             targetColumn={targetColumn}
-          />
-
-          {/* Results Section - Always visible */}
+          /> 
+         </div>
+         <div className="grid">
           <ResultsSection
             trainingResult={trainingResult}
             featureColumn={featureColumn}
             targetColumn={targetColumn}
             formatNumber={formatNumber}
           />
-        </div>
+         </div>
+
 
         {/* Prediction Section - Only shows after training */}
         {trainingResult && (

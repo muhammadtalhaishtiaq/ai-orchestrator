@@ -1,6 +1,6 @@
 'use client';
 
-import { Upload, Play, RefreshCw, Download } from 'lucide-react';
+import { Upload, Play, RefreshCw, Download, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -66,6 +66,7 @@ export default function DataSection({
 }: DataSectionProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isFeatureDropdownOpen, setIsFeatureDropdownOpen] = useState(false);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -98,185 +99,198 @@ export default function DataSection({
   const categoricalColumns = csvValidation?.categorical_columns || [];
 
   return (
-    <div className="lg:col-span-1 rounded-lg border border-cyan-500/20 bg-[#1a1f2e] p-6">
-      <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+    <div className="rounded-lg border border-cyan-500/20 bg-[#1a1f2e] p-3 flex flex-col">
+      <h2 className="text-lg font-semibold mb-2 flex items-center gap-2">
         <Upload className="w-5 h-5 text-cyan-400" />
         📤 Your Data & Training
       </h2>
 
-      {/* Dataset Selection */}
-      <div className="mb-4">
-        <Label className="text-sm text-gray-300 mb-2 block">Dataset Selection:</Label>
-        <select
-          value={selectedDataset}
-          onChange={(e) => onDatasetChange(e.target.value)}
-          className="w-full bg-gray-800 border border-cyan-500/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-cyan-500"
-        >
-          {datasetOptions.map((option) => (
-            <option key={option.id} value={option.id}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-        <p className="text-xs text-gray-500 mt-2 mb-2">Or upload custom CSV:</p>
+      {/* TWO COLUMNS: Left (20%) Controls, Right (80%) Data Preview - Fixed Height Container */}
+      <div className="grid grid-cols-5 gap-3 h-96 flex-shrink-0 overflow-hidden auto-rows-max">
         
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".csv"
-          onChange={handleFileChange}
-          className="hidden"
-          aria-label="Upload CSV file"
-        />
-        
-        <Button
-          variant="outline"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={isUploading}
-          className="w-full border-cyan-500/20 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10"
-        >
-          <Upload className="w-4 h-4 mr-2" />
-          {isUploading ? 'Processing CSV...' : 'Upload Custom CSV'}
-        </Button>
+        {/* LEFT COLUMN (20% = col-span-1): Upload, Dataset, Features, Target */}
+        <div className="col-span-1 space-y-1 flex flex-col overflow-y-auto h-96">
+          
+          {/* Dataset Selection */}
+          <div className="flex-shrink-0">
+            <p className="text-xs text-gray-400 font-semibold mb-0.5">Dataset</p>
+            <select
+              value={selectedDataset}
+              onChange={(e) => onDatasetChange(e.target.value)}
+              className="w-full bg-gray-800 border border-cyan-500/20 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-cyan-500"
+            >
+              {datasetOptions.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <p className="text-xs text-gray-500 mt-3">
-          Don't have CSV?{' '}
-          <button
-            onClick={handleDownloadCSV}
-            className="text-cyan-400 hover:text-cyan-300 underline transition-colors"
-          >
-            Try ours and test it
-          </button>
-        </p>
-      </div>
+          {/* Upload CSV */}
+          {/* <div className="flex-shrink-0">
+            <p className="text-xs text-gray-400 font-semibold mb-0.5">Upload</p>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            
+            <div className="flex gap-2 flex-col">
+              <Button
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+                className="w-full h-7 text-xs px-2 border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/10"
+              >
+                <Upload className="w-3 h-3 mr-1" />
+                {isUploading ? 'Processing...' : 'Upload CSV'}
+              </Button>
 
-      {/* Data Preview */}
-      {currentDataset && !csvValidation && (
-        <div className="mb-4 p-3 bg-gray-800/50 rounded-lg">
-          <p className="text-xs text-gray-400 mb-2">Sample Dataset Preview (first 5 rows):</p>
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="border-b border-cyan-500/20">
-                  {currentDataset.columns.map((col) => (
-                    <th key={col} className="px-2 py-1 text-left text-cyan-400">
-                      {col}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {currentDataset.data.slice(0, 5).map((row, idx) => (
-                  <tr key={idx} className="border-b border-gray-700/30">
-                    {currentDataset.columns.map((col) => (
-                      <td key={col} className="px-2 py-1 text-gray-300">
-                        {row[col]}
-                      </td>
+              <button
+                onClick={handleDownloadCSV}
+                className="w-full text-xs text-cyan-400 hover:text-cyan-300 py-1 px-2 rounded hover:bg-gray-800 border border-cyan-500/20"
+              >
+                <Download className="w-3 h-3 inline mr-1" />
+                Sample
+              </button>
+            </div>
+          </div> */}
+
+          {/* Features Multi-Select Dropdown */}
+          <div className="flex-shrink-0">
+            <p className="text-xs text-gray-400 font-semibold mb-0.5">Features</p>
+            
+            <div className="relative flex flex-col">
+              <button
+                onClick={() => setIsFeatureDropdownOpen(!isFeatureDropdownOpen)}
+                className="w-full bg-gray-800 border border-cyan-500/20 rounded px-2 py-1 text-xs text-gray-300 text-left flex items-center justify-between hover:border-cyan-500/50"
+              >
+                <span className="truncate">
+                  {selectedFeatures.length === 0 
+                    ? 'Select...' 
+                    : `${selectedFeatures.length}`}
+                </span>
+                <ChevronDown className={`w-3 h-3 text-gray-400 transition-transform flex-shrink-0 ${isFeatureDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {/* Dropdown Menu */}
+              {isFeatureDropdownOpen && (
+                <div className="absolute top-8 left-0 right-0 bg-gray-800 border border-cyan-500/20 rounded shadow-lg z-10 max-h-40 overflow-y-auto">
+                  {availableColumns
+                    .filter(col => col !== targetColumn)
+                    .map(column => (
+                      <label
+                        key={column}
+                        className="flex items-center gap-2 px-2 py-1.5 hover:bg-gray-700 cursor-pointer text-xs text-gray-300"
+                      >
+                        <Checkbox
+                          checked={selectedFeatures.includes(column)}
+                          onCheckedChange={() => onToggleFeature(column)}
+                          className="w-3 h-3"
+                        />
+                        <span className="truncate">{column}</span>
+                      </label>
+                    ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Target Selection */}
+          <div className="flex-shrink-0">
+            <p className="text-xs text-gray-400 font-semibold mb-0.5">Target (Y)</p>
+            <select
+              value={targetColumn}
+              onChange={(e) => onTargetChange(e.target.value)}
+              className="w-full bg-gray-800 border border-cyan-500/20 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-cyan-500"
+            >
+              <option value="">Select...</option>
+              {availableColumns
+                .filter(col => !selectedFeatures.includes(col))
+                .map(column => (
+                  <option key={column} value={column}>{column}</option>
+                ))}
+            </select>
+          </div>
+
+          {/* Stats */}
+          <div className="pt-2 border-t border-gray-700 space-y-1">
+            <p className="text-xs text-gray-500">Selected: <span className="text-cyan-300 font-semibold">{selectedFeatures.length}</span></p>
+            <p className="text-xs text-gray-500">Rows: <span className="text-cyan-300 font-semibold">{csvValidation?.row_count || currentDataset?.rowCount || 0}</span></p>
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN (80% = col-span-4): Data Preview */}
+        <div className="col-span-4 space-y-2 flex flex-col h-96 overflow-hidden">
+          <p className="text-xs text-gray-400 font-semibold">Data Preview (All Rows)</p>
+          
+          {currentDataset || csvValidation ? (
+            <div className="flex-1 bg-gray-900 rounded px-2 py-1 overflow-y-scroll overflow-x-auto border border-gray-800 min-h-0">
+              <table className="text-xs whitespace-nowrap w-max">
+                <thead className="sticky top-0 bg-gray-800">
+                  <tr className="border-b border-gray-700">
+                    {availableColumns.map((col) => (
+                      <th key={col} className="px-2 py-0.5 text-left text-cyan-400 text-xs">
+                        {col}
+                      </th>
                     ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <p className="text-xs text-gray-500 mt-2">
-            Total: {currentDataset.rowCount || currentDataset.data.length} rows
-          </p>
-        </div>
-      )}
-
-      {csvValidation && (
-        <div className="mb-4 p-3 bg-gray-800/50 rounded-lg text-xs text-gray-400 space-y-1">
-          <p>✓ {csvValidation.row_count} rows loaded</p>
-          <p>✓ {numericColumns.length} numeric, {categoricalColumns.length} categorical columns</p>
-        </div>
-      )}
-
-      {/* Column Selection */}
-      {availableColumns.length > 0 && (
-        <>
-          <div className="mb-4 space-y-3">
-            <div>
-              <Label className="text-sm text-gray-300 mb-2 block">Feature Columns (select multiple):</Label>
-              <div className="bg-gray-900 rounded-lg p-3 max-h-48 overflow-y-auto space-y-2">
-                {availableColumns
-                  .filter(col => col !== targetColumn)
-                  .map(column => (
-                    <div key={column} className="flex items-center gap-2">
-                      <Checkbox
-                        id={`feature-${column}`}
-                        checked={selectedFeatures.includes(column)}
-                        onCheckedChange={() => onToggleFeature(column)}
-                        className="border-cyan-500/30 data-[state=checked]:bg-cyan-600 data-[state=checked]:border-cyan-600"
-                      />
-                      <label
-                        htmlFor={`feature-${column}`}
-                        className="text-sm text-gray-300 cursor-pointer flex-1"
-                      >
-                        {column}
-                      </label>
-                    </div>
+                </thead>
+                <tbody>
+                  {((currentDataset?.data || csvValidation?.sample_data) || []).map((row, idx) => (
+                    <tr key={idx} className="border-b border-gray-700/50 hover:bg-gray-800/50">
+                      {availableColumns.map((col) => (
+                        <td key={col} className="px-2 py-0.5 text-gray-300 text-xs">
+                          {String(row[col]).substring(0, 20)}
+                        </td>
+                      ))}
+                    </tr>
                   ))}
-              </div>
-              <p className="text-xs text-gray-500 mt-2">
-                {selectedFeatures.length} feature(s) selected
-              </p>
+                </tbody>
+              </table>
             </div>
-
-            <div>
-              <Label className="text-sm text-gray-300 mb-2 block">Target (Y) Column:</Label>
-              <select
-                value={targetColumn}
-                onChange={(e) => onTargetChange(e.target.value)}
-                className="w-full bg-gray-800 border border-cyan-500/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-cyan-500"
-              >
-                <option value="">Select target...</option>
-                {availableColumns
-                  .filter(col => !selectedFeatures.includes(col))
-                  .map(column => (
-                    <option key={column} value={column}>{column}</option>
-                  ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Train Button */}
-          {!hasResults ? (
-            <Button
-              onClick={onTrain}
-              disabled={isTraining || selectedFeatures.length === 0 || !targetColumn}
-              className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700"
-            >
-              {isTraining ? (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  Training...
-                </>
-              ) : (
-                <>
-                  <Play className="w-4 h-4 mr-2" />
-                  Train Model
-                </>
-              )}
-            </Button>
           ) : (
-            <Button
-              onClick={onReset}
-              variant="outline"
-              className="w-full border-cyan-500/20 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10"
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Reset & Train Again
-            </Button>
+            <div className="flex-1 bg-gray-900 rounded px-2 py-2 text-xs text-gray-500 text-center border border-gray-800 flex items-center justify-center min-h-0">
+              No data
+            </div>
           )}
-        </>
-      )}
-
-      {!csvValidation && !currentDataset && (
-        <div className="text-center text-gray-500 py-8">
-          <p className="text-sm">Select a sample dataset or upload a CSV file to get started</p>
-          <p className="text-xs mt-2">Need at least 3 columns (2 features + 1 target)</p>
         </div>
-      )}
+      </div>
+
+      {/* Train Button - Full Width Below - Separate Section */}
+      <div className="mt-3 flex gap-2 flex-shrink-0 relative z-20">
+        {!hasResults ? (
+          <Button
+            onClick={onTrain}
+            disabled={isTraining || selectedFeatures.length === 0 || !targetColumn}
+            className="flex-1 h-7 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-xs"
+          >
+            {isTraining ? (
+              <>
+                <RefreshCw className="w-3 h-3 mr-1 animate-spin" />
+                Training...
+              </>
+            ) : (
+              <>
+                <Play className="w-3 h-3 mr-1" />
+                Train Model
+              </>
+            )}
+          </Button>
+        ) : (
+          <Button
+            onClick={onReset}
+            variant="outline"
+            className="flex-1 h-7 border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/10 text-xs"
+          >
+            <RefreshCw className="w-3 h-3 mr-1" />
+            Reset
+          </Button>
+        )}
+      </div>
     </div>
   );
 }
