@@ -8,6 +8,7 @@ from app.services.auth_service import (
 from app.database import supabase_admin
 from app.config import settings
 import uuid
+from datetime import datetime
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -39,6 +40,26 @@ async def register(user_data: UserRegister):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to create user: {str(e)}"
         )
+
+    # Auto-create a default project for the new user.
+    # Wrapped in try/except so registration succeeds even if the projects
+    # table has not been created yet.
+    try:
+        now = datetime.utcnow().isoformat()
+        supabase_admin.table("projects").insert({
+            "id": str(uuid.uuid4()),
+            "user_id": user_id,
+            "name": "My First Project",
+            "description": None,
+            "color": "#6366F1",
+            "icon": "zap",
+            "is_default": True,
+            "created_at": now,
+            "updated_at": now,
+        }).execute()
+    except Exception:
+        # Projects table may not exist yet — registration still succeeds.
+        pass
 
     access_token = create_access_token(
         data={"sub": user_id, "email": user_data.email},
