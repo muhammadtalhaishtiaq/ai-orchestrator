@@ -77,7 +77,7 @@ export const dashboardAPI = {
 
 // Pipelines
 export const pipelinesAPI = {
-  list: () => api.get('/pipelines/'),
+  list: (projectId?: string) => api.get('/pipelines/', { params: projectId ? { project_id: projectId } : undefined }),
   get: (id: string) => api.get(`/pipelines/${id}`),
   create: (data: any) => api.post('/pipelines/', data),
   update: (id: string, data: any) => api.put(`/pipelines/${id}`, data),
