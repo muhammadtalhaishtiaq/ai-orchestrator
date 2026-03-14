@@ -49,6 +49,7 @@ class PipelineCreate(BaseModel):
     source_folder: Optional[str] = None
     steps: List[PipelineStepIn] = []
     is_active: bool = True
+    project_id: Optional[str] = None
 
 class PipelineUpdate(BaseModel):
     name: Optional[str] = None
@@ -59,6 +60,7 @@ class PipelineUpdate(BaseModel):
     source_folder: Optional[str] = None
     steps: Optional[List[PipelineStepIn]] = None
     is_active: Optional[bool] = None
+    project_id: Optional[str] = None
 
 def _enrich_pipeline(pipeline: dict) -> dict:
     """Add next_run_time to pipeline dict."""
@@ -86,21 +88,25 @@ async def create_pipeline(
 
     steps_data = [s.model_dump() for s in data.steps]
 
+    insert_data = {
+        "id": pipeline_id,
+        "user_id": current_user["id"],
+        "name": data.name,
+        "description": data.description,
+        "trigger_type": data.trigger_type,
+        "trigger_config": data.trigger_config,
+        "source_repo": data.source_repo,
+        "source_folder": data.source_folder,
+        "steps": steps_data,
+        "is_active": data.is_active,
+        "created_at": now,
+        "updated_at": now,
+    }
+    if data.project_id:
+        insert_data["project_id"] = data.project_id
+
     try:
-        result = supabase_admin.table("pipelines").insert({
-            "id": pipeline_id,
-            "user_id": current_user["id"],
-            "name": data.name,
-            "description": data.description,
-            "trigger_type": data.trigger_type,
-            "trigger_config": data.trigger_config,
-            "source_repo": data.source_repo,
-            "source_folder": data.source_folder,
-            "steps": steps_data,
-            "is_active": data.is_active,
-            "created_at": now,
-            "updated_at": now,
-        }).execute()
+        result = supabase_admin.table("pipelines").insert(insert_data).execute()
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to create pipeline: {str(e)}")
 
@@ -113,13 +119,19 @@ async def create_pipeline(
     return _enrich_pipeline(pipeline)
 
 @router.get("/")
-async def list_pipelines(current_user: dict = Depends(get_current_user)):
-    """List all pipelines for the current user."""
-    result = supabase_admin.table("pipelines")\
+async def list_pipelines(
+    project_id: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """List all pipelines for the current user, optionally filtered by project."""
+    query = supabase_admin.table("pipelines")\
         .select("*")\
-        .eq("user_id", current_user["id"])\
-        .order("created_at", desc=True)\
-        .execute()
+        .eq("user_id", current_user["id"])
+
+    if project_id:
+        query = query.eq("project_id", project_id)
+
+    result = query.order("created_at", desc=True).execute()
 
     pipelines = [_enrich_pipeline(p) for p in (result.data or [])]
     return {"pipelines": pipelines, "total": len(pipelines)}

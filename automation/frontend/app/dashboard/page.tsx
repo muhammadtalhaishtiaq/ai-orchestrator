@@ -22,26 +22,61 @@ export default function DashboardPage() {
   }, []);
 
   if (loading) return (
-    <div className="flex items-center justify-center h-64">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-600" />
+    <div className="p-8 space-y-6">
+      <div className="h-8 bg-slate-200 rounded w-48 animate-pulse" />
+      <div className="h-4 bg-slate-200 rounded w-64 animate-pulse" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="h-28 bg-slate-200 rounded-xl animate-pulse" />
+        ))}
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="h-36 bg-slate-200 rounded-xl animate-pulse" />
+        <div className="h-36 bg-slate-200 rounded-xl animate-pulse" />
+      </div>
+      <div className="h-40 bg-slate-200 rounded-xl animate-pulse" />
     </div>
   );
 
   const stats = [
-    { label: "Total Notebooks", value: summary?.notebooks.total ?? 0, icon: BookOpen, color: "text-sky-600", bg: "bg-sky-50" },
-    { label: "Published", value: summary?.notebooks.published ?? 0, icon: CheckCircle, color: "text-green-600", bg: "bg-green-50" },
-    { label: "Pending", value: summary?.notebooks.pending ?? 0, icon: Clock, color: "text-yellow-600", bg: "bg-yellow-50" },
-    { label: "Active Pipelines", value: summary?.pipelines.active ?? 0, icon: Zap, color: "text-purple-600", bg: "bg-purple-50" },
+    {
+      label: "Total Notebooks",
+      value: summary?.notebooks.total ?? 0,
+      icon: BookOpen,
+      color: "text-indigo-600",
+      bg: "bg-indigo-50",
+    },
+    {
+      label: "Published",
+      value: summary?.notebooks.published ?? 0,
+      icon: CheckCircle,
+      color: "text-emerald-600",
+      bg: "bg-emerald-50",
+    },
+    {
+      label: "Pending",
+      value: summary?.notebooks.pending ?? 0,
+      icon: Clock,
+      color: "text-amber-600",
+      bg: "bg-amber-50",
+    },
+    {
+      label: "Active Pipelines",
+      value: summary?.pipelines.active ?? 0,
+      icon: Zap,
+      color: "text-indigo-600",
+      bg: "bg-indigo-50",
+    },
   ];
 
   return (
     <div className="p-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-800">
+        <h1 className="text-2xl font-bold text-slate-900">
           Welcome back, {summary?.user.full_name || summary?.user.email}
         </h1>
-        <p className="text-slate-500 mt-1">Here&apos;s your content automation overview</p>
+        <p className="text-slate-600 mt-1">Here&apos;s your content automation overview</p>
       </div>
 
       {/* Stats Grid */}
@@ -49,55 +84,90 @@ export default function DashboardPage() {
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
-            <div key={stat.label} className="card">
+            <div key={stat.label} className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
               <div className="flex items-center justify-between mb-3">
-                <p className="text-sm text-slate-500 font-medium">{stat.label}</p>
+                <p className="text-sm text-slate-400 font-medium">{stat.label}</p>
                 <div className={`w-9 h-9 ${stat.bg} rounded-lg flex items-center justify-center`}>
                   <Icon className={`w-5 h-5 ${stat.color}`} />
                 </div>
               </div>
-              <p className="text-3xl font-bold text-slate-800">{stat.value}</p>
+              <p className="text-3xl font-bold text-slate-900">{stat.value}</p>
             </div>
           );
         })}
       </div>
 
       {/* Status Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {/* GitHub Status */}
-        <div className="card">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
           <div className="flex items-center gap-3 mb-4">
-            <Github className="w-5 h-5 text-slate-700" />
-            <h3 className="font-semibold text-slate-800">GitHub Connection</h3>
+            <Github className="w-5 h-5 text-slate-600" />
+            <h3 className="font-semibold text-slate-900">GitHub Connection</h3>
           </div>
           {summary?.github.connected ? (
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full" />
-              <span className="text-sm text-slate-600">Connected to <strong>{summary.github.connected_repo}</strong></span>
+              <div className="w-2 h-2 bg-emerald-500 rounded-full" />
+              <span className="text-sm text-slate-600">
+                Connected to <strong>{summary.github.connected_repo}</strong>
+              </span>
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-yellow-500" />
-              <span className="text-sm text-slate-500">Not connected — <a href="/dashboard/github" className="text-sky-600 hover:underline">Connect GitHub</a></span>
+              <AlertCircle className="w-4 h-4 text-amber-500" />
+              <span className="text-sm text-slate-600">
+                Not connected —{" "}
+                <a href="/dashboard/github" className="text-indigo-600 hover:text-indigo-700 hover:underline font-medium">
+                  Connect GitHub
+                </a>
+              </span>
             </div>
           )}
         </div>
 
         {/* Pipelines Status */}
-        <div className="card">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
           <div className="flex items-center gap-3 mb-4">
-            <GitBranch className="w-5 h-5 text-slate-700" />
-            <h3 className="font-semibold text-slate-800">Pipelines</h3>
+            <GitBranch className="w-5 h-5 text-slate-600" />
+            <h3 className="font-semibold text-slate-900">Pipelines</h3>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-6">
             <div className="text-center">
-              <p className="text-2xl font-bold text-slate-800">{summary?.pipelines.total ?? 0}</p>
-              <p className="text-xs text-slate-500">Total</p>
+              <p className="text-2xl font-bold text-slate-900">{summary?.pipelines.total ?? 0}</p>
+              <p className="text-xs text-slate-400 mt-0.5">Total</p>
             </div>
+            <div className="w-px h-8 bg-slate-200" />
             <div className="text-center">
-              <p className="text-2xl font-bold text-green-600">{summary?.pipelines.active ?? 0}</p>
-              <p className="text-xs text-slate-500">Active</p>
+              <p className="text-2xl font-bold text-emerald-600">{summary?.pipelines.active ?? 0}</p>
+              <p className="text-xs text-slate-400 mt-0.5">Active</p>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Run Card */}
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-semibold text-slate-900 mb-1">Quick Run</h3>
+            <p className="text-sm text-slate-600">
+              Trigger a pipeline run or navigate to your active automation.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <a
+              href="/dashboard/projects"
+              className="inline-flex items-center gap-2 border border-slate-200 text-slate-600 hover:border-indigo-300 hover:text-indigo-600 font-medium px-4 py-2 rounded-lg transition-colors text-sm"
+            >
+              View Projects
+            </a>
+            <a
+              href="/dashboard/github"
+              className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors text-sm shadow-sm"
+            >
+              <Zap className="w-4 h-4" />
+              Go to GitHub
+            </a>
           </div>
         </div>
       </div>

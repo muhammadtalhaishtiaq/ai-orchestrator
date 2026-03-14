@@ -11,6 +11,7 @@ import {
   X,
   Loader2,
   AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import toast from "react-hot-toast";
@@ -65,7 +66,7 @@ export default function ProjectsPage() {
     try {
       setError(null);
       const res = await api.get("/projects/");
-      setProjects(res.data);
+      setProjects(Array.isArray(res.data) ? res.data : (res.data?.projects ?? []));
     } catch (err: any) {
       if (err.response?.status === 404) {
         setProjects([]);
@@ -165,7 +166,7 @@ export default function ProjectsPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900">Projects</h1>
-          <p className="text-slate-500 text-sm mt-1">
+          <p className="text-slate-600 text-sm mt-1">
             Organize your automations into isolated workspaces.
           </p>
         </div>
@@ -180,15 +181,17 @@ export default function ProjectsPage() {
 
       {/* Error state */}
       {error && (
-        <div className="mb-6 bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+        <div className="mb-6 bg-amber-50 border border-amber-200 rounded-xl p-5 flex items-start gap-4">
           <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="text-sm font-medium text-amber-800">{error}</p>
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-amber-800 mb-1">Failed to load projects</p>
+            <p className="text-xs text-amber-700 mb-3">{error}</p>
             <button
-              onClick={fetchProjects}
-              className="text-xs text-amber-600 hover:text-amber-800 mt-1 underline underline-offset-1"
+              onClick={() => { setLoading(true); fetchProjects(); }}
+              className="inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
             >
-              Try again
+              <RefreshCw className="w-3.5 h-3.5" />
+              Retry
             </button>
           </div>
         </div>
@@ -196,20 +199,23 @@ export default function ProjectsPage() {
 
       {/* Loading */}
       {loading ? (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-white rounded-xl border border-slate-200 p-6 animate-pulse">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-slate-200 rounded-xl" />
-                <div className="flex-1">
-                  <div className="h-4 bg-slate-200 rounded w-3/4 mb-2" />
-                  <div className="h-3 bg-slate-100 rounded w-1/2" />
+        <div className="space-y-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 animate-pulse">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-slate-200 rounded-xl" />
+                  <div className="flex-1">
+                    <div className="h-4 bg-slate-200 rounded w-3/4 mb-2" />
+                    <div className="h-3 bg-slate-200 rounded w-1/2" />
+                  </div>
                 </div>
+                <div className="h-3 bg-slate-200 rounded mb-2" />
+                <div className="h-3 bg-slate-200 rounded w-4/5 mb-6" />
+                <div className="h-8 bg-slate-200 rounded-lg" />
               </div>
-              <div className="h-3 bg-slate-100 rounded mb-2" />
-              <div className="h-3 bg-slate-100 rounded w-4/5" />
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       ) : projects.length === 0 ? (
         /* Empty state */
