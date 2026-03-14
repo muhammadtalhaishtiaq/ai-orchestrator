@@ -53,10 +53,42 @@ export const notebooksAPI = {
   updateStatus: (id: string, status: string) =>
     api.patch(`/notebooks/${id}/status`, null, { params: { status } }),
   getNext: () => api.get('/notebooks/next'),
-  getStats: () => api.get('/notebooks/stats'),
+  getStats: () => api.get("/notebooks/stats"),
+  regenerate: (id: string) => api.post(`/notebooks/${id}/regenerate`),
+  pushGitHub: (id: string) => api.post(`/notebooks/${id}/push-github`),
+  syncFromGitHub: () => api.post("/notebooks/sync"),
+};
+
+// Projects
+export const projectsAPI = {
+  list: () => api.get('/projects/'),
+  get: (id: string) => api.get(`/projects/${id}`),
+  create: (data: { name: string; description?: string; color?: string; icon?: string }) =>
+    api.post('/projects/', data),
+  update: (id: string, data: any) => api.put(`/projects/${id}`, data),
+  delete: (id: string) => api.delete(`/projects/${id}`),
+  setDefault: (id: string) => api.post(`/projects/${id}/set-default`),
 };
 
 // Dashboard
 export const dashboardAPI = {
   getSummary: () => api.get('/dashboard/summary'),
+};
+
+// Pipelines
+export const pipelinesAPI = {
+  list: () => api.get('/pipelines/'),
+  get: (id: string) => api.get(`/pipelines/${id}`),
+  create: (data: any) => api.post('/pipelines/', data),
+  update: (id: string, data: any) => api.put(`/pipelines/${id}`, data),
+  delete: (id: string) => api.delete(`/pipelines/${id}`),
+  toggle: (id: string) => api.post(`/pipelines/${id}/toggle`),
+  clone: (id: string) => api.post(`/pipelines/${id}/clone`),
+  getAvailableSteps: () => api.get('/pipelines/available-steps'),
+  runNow: (notebookId?: string) =>
+    api.post('/pipeline/run', null, { params: notebookId ? { notebook_id: notebookId } : {} }),
+  runPipeline: (pipelineId: string, notebookId?: string) =>
+    api.post('/pipeline/run', null, { params: { pipeline_id: pipelineId, ...(notebookId ? { notebook_id: notebookId } : {}) } }),
+  getRunStatus: (runId: string) => api.get(`/pipeline/run/${runId}/status`),
+  getHistory: () => api.get('/pipeline/runs/history'),
 };

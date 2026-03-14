@@ -1,0 +1,153 @@
+{
+  "meta": {
+    "version": "1.0",
+    "description": "Generation rules for AI Orchestrator ML course notebooks",
+    "last_updated": "2026-03-14"
+  },
+  "audience": {
+    "target": "Beginners learning Machine Learning",
+    "assumed_knowledge": [
+      "Basic Python",
+      "High school math"
+    ],
+    "goal": "Understand ML concepts and apply them \u2014 not just copy code"
+  },
+  "tone": {
+    "voice": "friendly teacher explaining to a smart friend",
+    "language": "simple, plain English \u2014 no jargon without explanation",
+    "avoid": [
+      "academic/research paper tone",
+      "dense math notation without explanation",
+      "walls of text",
+      "unexplained abbreviations",
+      "phrases like 'trivially', 'obviously', 'it is well-known that'"
+    ],
+    "prefer": [
+      "short sentences",
+      "real-world analogies for every concept",
+      "explain the 'why' before the 'how'",
+      "conversational headings like 'So what IS linear regression?' instead of 'Linear Regression Overview'"
+    ]
+  },
+  "structure": {
+    "sections": [
+      {
+        "id": "hook",
+        "title": "What are we building today?",
+        "type": "markdown",
+        "description": "1-2 sentences max. State the concept and one real-world use case. No fluff.",
+        "max_words": 60
+      },
+      {
+        "id": "concept",
+        "title": "The idea (plain English)",
+        "type": "markdown",
+        "description": "Explain the concept using an analogy. No equations yet. Answer: what problem does this solve?",
+        "max_words": 150,
+        "must_include": "a real-world analogy (e.g. house prices, spam emails, Netflix recommendations)"
+      },
+      {
+        "id": "setup",
+        "title": "Setup",
+        "type": "code",
+        "description": "Import libraries. Load or generate simple sample data. Keep it minimal \u2014 only what's needed.",
+        "max_lines": 20,
+        "comment_style": "explain every import in one line comment"
+      },
+      {
+        "id": "implementation",
+        "title": "Let's code it step by step",
+        "type": "code",
+        "description": "Build the model or algorithm. Each step gets its own cell with a short markdown explanation before it.",
+        "max_cells": 4,
+        "comment_style": "inline comments on confusing lines, not every line"
+      },
+      {
+        "id": "results",
+        "title": "What did we get?",
+        "type": "mixed",
+        "description": "Print and explain results. Tell the learner what the numbers mean in plain English.",
+        "max_words": 100
+      },
+      {
+        "id": "visualization",
+        "title": "Let's see it",
+        "type": "code",
+        "description": "One clear chart/plot. Label axes. Add a title. Use matplotlib or seaborn.",
+        "max_cells": 2,
+        "must_include": "chart title and axis labels"
+      },
+      {
+        "id": "summary",
+        "title": "Quick recap",
+        "type": "markdown",
+        "description": "3-5 bullet points. What did we learn? When to use this? What to try next?",
+        "max_bullets": 5
+      },
+      {
+        "id": "exercises",
+        "title": "Try it yourself",
+        "type": "code",
+        "description": "2-3 short TODO exercises with hints. Leave code cells empty for learner to fill.",
+        "max_exercises": 3,
+        "format": "# TODO: [task description]\\n# Hint: [one-line hint]"
+      }
+    ],
+    "total_cells_target": 14,
+    "total_cells_max": 20
+  },
+  "code_style": {
+    "variable_naming": "descriptive, no single letters except i/j in loops",
+    "comments": "explain the WHY not the WHAT",
+    "data": "use real-feeling example data (house prices, student grades, email spam, etc.)",
+    "error_handling": "skip try/except unless essential \u2014 keep code clean",
+    "imports": "import only what is used"
+  },
+  "difficulty_levels": {
+    "beginner": {
+      "description": "Week 0-3 notebooks",
+      "code_complexity": "no more than 2 for-loops, no list comprehensions",
+      "theory": "concept only, no derivations",
+      "exercises": "fill-in-the-blank style"
+    },
+    "intermediate": {
+      "description": "Week 4-8 notebooks",
+      "code_complexity": "sklearn pipelines OK, some list comprehensions",
+      "theory": "intuition + formula with explanation",
+      "exercises": "modify existing code"
+    },
+    "advanced": {
+      "description": "Week 9-12 notebooks",
+      "code_complexity": "full implementations, custom classes OK",
+      "theory": "deeper math if necessary, always explained",
+      "exercises": "build from scratch or extend the model"
+    }
+  },
+  "folder_difficulty_map": {
+    "00-foundations": "beginner",
+    "01-data-preprocessing": "beginner",
+    "02-exploratory-data-analysis": "beginner",
+    "03-feature-engineering": "beginner",
+    "04-regression": "intermediate",
+    "05-classification": "intermediate",
+    "06-clustering": "intermediate",
+    "07-dimensionality-reduction": "intermediate",
+    "08-model-evaluation": "intermediate",
+    "09-ensemble-methods": "intermediate",
+    "10-neural-networks": "advanced",
+    "11-attention-transformers": "advanced",
+    "12-nlp": "advanced",
+    "13-computer-vision": "advanced",
+    "14-llms": "advanced",
+    "15-rag": "advanced",
+    "16-ai-agents": "advanced",
+    "17-reinforcement-learning": "advanced",
+    "18-mlops": "advanced",
+    "19-data-engineering": "intermediate",
+    "20-cloud-deployment": "advanced",
+    "21-production-best-practices": "advanced",
+    "22-end-to-end-projects": "advanced"
+  },
+  "colab_badge": true,
+  "colab_badge_format": "[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/muhammadtalhaishtiaq/ai-orchestrator/blob/main/{path})"
+}
