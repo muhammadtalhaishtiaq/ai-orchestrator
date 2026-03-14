@@ -1,23 +1,64 @@
 """
 Notebook generation service.
-Reads notebook_config.json and builds a real .ipynb for any topic.
+Tries LLM-based generation first; falls back to hardcoded template.
 Used by both the /notebooks/{id}/regenerate endpoint and the pipeline runner.
 """
 import json
 import os
+import logging
 import nbformat
 from nbformat.v4 import new_notebook, new_markdown_cell, new_code_cell
+from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 _CONFIG_PATH = os.path.join(os.path.dirname(__file__), "../config/notebook_config.json")
 with open(_CONFIG_PATH) as f:
     NOTEBOOK_CONFIG = json.load(f)
 
 
-def build_cells(notebook_name: str, folder: str, path: str) -> list:
+def build_cells(
+    notebook_name: str,
+    folder: str,
+    path: str,
+    llm_provider: Optional[str] = None,
+    llm_model: Optional[str] = None,
+    llm_api_key: Optional[str] = None,
+) -> list:
     """
-    Build a list of {'cell_type': 'markdown'|'code', 'source': str} dicts.
-    Follows the structure defined in notebook_config.json.
+    Build notebook cells.
+    If llm_provider + llm_api_key are provided, calls the LLM service.
+    Falls back to hardcoded template on any LLM error.
+
+    Returns a list of {'cell_type': 'markdown'|'code', 'source': str} dicts.
     """
+    # ── Try LLM generation ────────────────────────────────────────────────────
+    if llm_provider and llm_api_key:
+        try:
+            from app.services.llm_service import generate_notebook_cells
+            cfg = NOTEBOOK_CONFIG
+            difficulty_map = cfg.get("folder_difficulty_map", {})
+            difficulty = difficulty_map.get(folder, "intermediate")
+            cells = generate_notebook_cells(
+                topic=notebook_name,
+                folder=folder,
+                difficulty=difficulty,
+                provider=llm_provider,
+                model=llm_model,
+                api_key=llm_api_key,
+            )
+            logger.info(f"LLM generated {len(cells)} cells for '{notebook_name}'")
+            return cells
+        except Exception as e:
+            logger.warning(f"LLM generation failed for '{notebook_name}': {e}. Falling back to template.")
+
+    # ── Hardcoded template fallback ───────────────────────────────────────────
+    logger.info(f"Using template for '{notebook_name}' (no LLM config)")
+    return _template_cells(notebook_name, folder, path)
+
+
+def _template_cells(notebook_name: str, folder: str, path: str) -> list:
+    """Original hardcoded template — used as fallback when LLM is not configured."""
     cfg = NOTEBOOK_CONFIG
     difficulty_map = cfg["folder_difficulty_map"]
     difficulty = difficulty_map.get(folder, "intermediate")

@@ -260,3 +260,56 @@ async def update_notification_prefs(
         "notification_prefs": data.model_dump()
     })
     return {"message": "Notification preferences saved", **data.model_dump()}
+
+
+# ── Default LLM ───────────────────────────────────────────────────────────────
+
+class DefaultLlmUpdate(BaseModel):
+    provider: str
+    model: Optional[str] = None
+
+
+PROVIDER_MODELS = {
+    "openai":    ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo"],
+    "anthropic": ["claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022", "claude-3-opus-20240229"],
+    "gemini":    ["gemini-1.5-pro", "gemini-1.5-flash", "gemini-2.0-flash"],
+    "aiml-api":  ["gpt-4o", "gpt-4o-mini", "claude-3-5-sonnet", "gemini-1.5-pro"],
+    "kimi":      ["moonshot-v1-8k", "moonshot-v1-32k", "moonshot-v1-128k"],
+}
+
+
+@router.get("/llm-default")
+async def get_llm_default(current_user: dict = Depends(get_current_user)):
+    """Get the user's default LLM provider and model."""
+    row = _get_user_settings(current_user["id"])
+    llm = row.get("llm_default", {}) or {}
+    return {
+        "provider":       llm.get("provider", None),
+        "model":          llm.get("model", None),
+        "provider_models": PROVIDER_MODELS,
+    }
+
+
+@router.put("/llm-default")
+async def set_llm_default(
+    data: DefaultLlmUpdate,
+    current_user: dict = Depends(get_current_user),
+):
+    """Set the user's default LLM provider and model for notebook generation."""
+    provider = data.provider.lower().strip()
+    if provider not in SUPPORTED_PROVIDERS:
+        raise HTTPException(400, f"Unsupported provider. Allowed: {', '.join(SUPPORTED_PROVIDERS)}")
+
+    # Verify API key is saved for this provider
+    row = _get_user_settings(current_user["id"])
+    api_keys = row.get("api_keys", {}) or {}
+    if provider not in api_keys:
+        raise HTTPException(400, f"No API key saved for {provider}. Save your key first.")
+
+    model = data.model or None  # None = use provider default at runtime
+
+    _upsert_user_settings(current_user["id"], {
+        "llm_default": {"provider": provider, "model": model}
+    })
+    return {"message": f"Default LLM set to {provider}" + (f" / {model}" if model else ""),
+            "provider": provider, "model": model}
