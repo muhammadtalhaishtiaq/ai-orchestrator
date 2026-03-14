@@ -122,7 +122,7 @@ export default function PipelinesPage() {
   // Load projects once
   useEffect(() => {
     projectsAPI.list()
-      .then(({ data }) => setProjects(data || []))
+      .then(({ data }) => setProjects(Array.isArray(data) ? data : (data?.projects ?? [])))
       .catch(() => {});
   }, []);
 
