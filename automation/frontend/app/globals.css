@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 15, 23, 42;
+  --background-start-rgb: 248, 250, 252;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: rgb(var(--background-start-rgb));
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 px-4 rounded-lg transition-colors duration-200;
+  }
+  .input-field {
+    @apply w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent text-slate-900 bg-white;
+  }
+  .card {
+    @apply bg-white rounded-xl border border-slate-200 shadow-sm p-6;
+  }
+  .badge-pending { @apply bg-yellow-100 text-yellow-700 text-xs font-medium px-2 py-0.5 rounded-full; }
+  .badge-published { @apply bg-green-100 text-green-700 text-xs font-medium px-2 py-0.5 rounded-full; }
+  .badge-generated { @apply bg-blue-100 text-blue-700 text-xs font-medium px-2 py-0.5 rounded-full; }
+  .badge-skipped { @apply bg-slate-100 text-slate-600 text-xs font-medium px-2 py-0.5 rounded-full; }
+  .badge-missing { @apply bg-red-100 text-red-700 text-xs font-medium px-2 py-0.5 rounded-full; }
+}
