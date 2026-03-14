@@ -66,7 +66,7 @@ export default function ProjectsPage() {
     try {
       setError(null);
       const res = await api.get("/projects/");
-      setProjects(res.data);
+      setProjects(Array.isArray(res.data) ? res.data : (res.data?.projects ?? []));
     } catch (err: any) {
       if (err.response?.status === 404) {
         setProjects([]);
