@@ -137,9 +137,9 @@ async def _execute_pipeline_run(
         llm_model    = None
         llm_api_key  = None
         try:
-            from app.api.settings import _get_user_settings, _decrypt, SUPPORTED_PROVIDERS
-            us = _get_user_settings(user_id)
-            llm_cfg  = us.get("llm_default", {}) or {}
+            from app.api.settings import _get_user_settings, _get_llm_default, _decrypt, SUPPORTED_PROVIDERS
+            us       = _get_user_settings(user_id)
+            llm_cfg  = _get_llm_default(user_id)
             provider = llm_cfg.get("provider")
             if provider and provider in SUPPORTED_PROVIDERS:
                 api_keys = us.get("api_keys", {}) or {}

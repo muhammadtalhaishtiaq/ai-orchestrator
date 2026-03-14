@@ -551,7 +551,7 @@ function ApiKeysTab() {
     (async () => {
       try {
         const res = await settingsAPI.getApiKeys();
-        const entries: ApiKeyEntry[] = res.data ?? [];
+        const entries: ApiKeyEntry[] = res.data?.api_keys ?? [];
         const map: Record<string, ApiKeyEntry> = {};
         entries.forEach((e) => {
           map[e.provider] = e;

@@ -164,16 +164,16 @@ async def list_api_keys(current_user: dict = Depends(get_current_user)):
             plain = _decrypt(enc_val)
             masked[provider] = {
                 "provider": provider,
-                "masked": _mask(plain),
+                "masked_value": _mask(plain),
                 "is_set": True,
             }
         except Exception:
-            masked[provider] = {"provider": provider, "masked": "****", "is_set": True}
+            masked[provider] = {"provider": provider, "masked_value": "****", "is_set": True}
 
     # Always return all supported providers
     for p in SUPPORTED_PROVIDERS:
         if p not in masked:
-            masked[p] = {"provider": p, "masked": None, "is_set": False}
+            masked[p] = {"provider": p, "masked_value": None, "is_set": False}
 
     return {"api_keys": list(masked.values())}
 
@@ -278,14 +278,40 @@ PROVIDER_MODELS = {
 }
 
 
+def _get_llm_default(user_id: str) -> dict:
+    """Read llm_default stored inside notification_prefs JSONB (no extra column needed)."""
+    row = _get_user_settings(user_id)
+    prefs = row.get("notification_prefs", {}) or {}
+    return prefs.get("__llm_default__", {}) or {}
+
+
+def _set_llm_default(user_id: str, provider: str, model: Optional[str]):
+    """Persist llm_default inside notification_prefs JSONB."""
+    row = _get_user_settings(user_id)
+    prefs = dict(row.get("notification_prefs", {}) or {})
+    prefs["__llm_default__"] = {"provider": provider, "model": model}
+    try:
+        existing = supabase_admin.table("user_settings").select("id").eq("user_id", user_id).execute()
+        if existing.data:
+            supabase_admin.table("user_settings") \
+                .update({"notification_prefs": prefs}) \
+                .eq("user_id", user_id).execute()
+        else:
+            supabase_admin.table("user_settings").insert({
+                "user_id": user_id,
+                "notification_prefs": prefs,
+            }).execute()
+    except Exception as e:
+        raise HTTPException(500, f"Failed to save LLM default: {e}")
+
+
 @router.get("/llm-default")
 async def get_llm_default(current_user: dict = Depends(get_current_user)):
     """Get the user's default LLM provider and model."""
-    row = _get_user_settings(current_user["id"])
-    llm = row.get("llm_default", {}) or {}
+    llm = _get_llm_default(current_user["id"])
     return {
-        "provider":       llm.get("provider", None),
-        "model":          llm.get("model", None),
+        "provider":        llm.get("provider", None),
+        "model":           llm.get("model", None),
         "provider_models": PROVIDER_MODELS,
     }
 
@@ -306,10 +332,10 @@ async def set_llm_default(
     if provider not in api_keys:
         raise HTTPException(400, f"No API key saved for {provider}. Save your key first.")
 
-    model = data.model or None  # None = use provider default at runtime
-
-    _upsert_user_settings(current_user["id"], {
-        "llm_default": {"provider": provider, "model": model}
-    })
-    return {"message": f"Default LLM set to {provider}" + (f" / {model}" if model else ""),
-            "provider": provider, "model": model}
+    model = data.model or None
+    _set_llm_default(current_user["id"], provider, model)
+    return {
+        "message":  f"Default LLM set to {provider}" + (f" / {model}" if model else ""),
+        "provider": provider,
+        "model":    model,
+    }
