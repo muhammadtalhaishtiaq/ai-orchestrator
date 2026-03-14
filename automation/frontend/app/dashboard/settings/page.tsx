@@ -1,109 +1,809 @@
 "use client";
-import { useEffect, useState } from "react";
-import { Settings, Key, Shield, Bell, User } from "lucide-react";
 
-export default function SettingsPage() {
+import { useState, useEffect } from "react";
+import {
+  Settings,
+  Key,
+  Shield,
+  Bell,
+  User,
+  Eye,
+  EyeOff,
+  Trash2,
+  Save,
+  AlertTriangle,
+} from "lucide-react";
+import toast from "react-hot-toast";
+import clsx from "clsx";
+import { settingsAPI } from "@/lib/api";
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+type Tab = "profile" | "api-keys" | "security" | "notifications";
+
+interface Profile {
+  full_name: string;
+  email: string;
+}
+
+interface ApiKeyEntry {
+  provider: string;
+  masked_value: string | null;
+  is_set: boolean;
+}
+
+interface NotificationPrefs {
+  pipeline_completed: boolean;
+  pipeline_failed: boolean;
+  weekly_digest: boolean;
+}
+
+// ─── Provider Config ──────────────────────────────────────────────────────────
+
+const PROVIDERS = [
+  {
+    id: "openai",
+    name: "OpenAI",
+    initials: "OA",
+    color: "#10a37f",
+    description: "GPT-4o and o-series models for notebook generation",
+  },
+  {
+    id: "anthropic",
+    name: "Anthropic",
+    initials: "AN",
+    color: "#d97706",
+    description: "Claude models for high-quality reasoning tasks",
+  },
+  {
+    id: "gemini",
+    name: "Gemini",
+    initials: "GE",
+    color: "#4285f4",
+    description: "Google Gemini models for multimodal pipelines",
+  },
+  {
+    id: "aiml-api",
+    name: "AIML API",
+    initials: "AI",
+    color: "#6366f1",
+    description: "Unified gateway for multiple AI providers",
+  },
+  {
+    id: "kimi",
+    name: "Kimi",
+    initials: "KI",
+    color: "#8b5cf6",
+    description: "Moonshot AI's Kimi long-context model",
+  },
+];
+
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+
+function SkeletonCard({ lines = 3 }: { lines?: number }) {
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-3 animate-pulse">
+      <div className="h-4 bg-slate-200 rounded w-1/3" />
+      {Array.from({ length: lines }).map((_, i) => (
+        <div key={i} className="h-3 bg-slate-200 rounded w-full" />
+      ))}
+    </div>
+  );
+}
+
+function SkeletonProfile() {
+  return (
+    <div className="space-y-4 animate-pulse">
+      <div className="h-4 bg-slate-200 rounded w-24" />
+      <div className="h-10 bg-slate-200 rounded-lg w-full" />
+      <div className="h-4 bg-slate-200 rounded w-24 mt-4" />
+      <div className="h-10 bg-slate-200 rounded-lg w-full" />
+      <div className="h-10 bg-slate-200 rounded-lg w-32 mt-2" />
+    </div>
+  );
+}
+
+function SkeletonApiKeys() {
+  return (
+    <div className="space-y-4">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div
+          key={i}
+          className="bg-white rounded-xl border border-slate-200 p-5 animate-pulse flex items-center gap-4"
+        >
+          <div className="w-10 h-10 rounded-full bg-slate-200 flex-shrink-0" />
+          <div className="flex-1 space-y-2">
+            <div className="h-4 bg-slate-200 rounded w-28" />
+            <div className="h-3 bg-slate-200 rounded w-48" />
+          </div>
+          <div className="h-8 bg-slate-200 rounded-lg w-24" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Toggle Switch ────────────────────────────────────────────────────────────
+
+function Toggle({
+  checked,
+  onChange,
+}: {
+  checked: boolean;
+  onChange: (val: boolean) => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      onClick={() => onChange(!checked)}
+      className={clsx(
+        "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2",
+        checked ? "bg-indigo-600" : "bg-slate-200"
+      )}
+    >
+      <span
+        className={clsx(
+          "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+          checked ? "translate-x-5" : "translate-x-0"
+        )}
+      />
+    </button>
+  );
+}
+
+// ─── Tab: Profile ─────────────────────────────────────────────────────────────
+
+function ProfileTab() {
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [profile, setProfile] = useState<Profile>({ full_name: "", email: "" });
+  const [fullName, setFullName] = useState("");
 
   useEffect(() => {
-    // Simulate initial load check (no real data fetch yet — Sprint 2 feature)
-    const timer = setTimeout(() => setLoading(false), 400);
-    return () => clearTimeout(timer);
+    (async () => {
+      try {
+        const res = await settingsAPI.getProfile();
+        const data: Profile = res.data;
+        setProfile(data);
+        setFullName(data.full_name ?? "");
+      } catch {
+        toast.error("Failed to load profile.");
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
-  if (loading) return (
-    <div className="p-8 space-y-6">
-      <div className="h-8 bg-slate-200 rounded w-48 animate-pulse" />
-      <div className="h-4 bg-slate-200 rounded w-80 animate-pulse" />
-      <div className="grid grid-cols-4 gap-4">
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="h-28 bg-slate-200 rounded-xl animate-pulse" />
-        ))}
+  const handleSave = async () => {
+    if (!fullName.trim()) {
+      toast.error("Full name cannot be empty.");
+      return;
+    }
+    setSaving(true);
+    try {
+      await settingsAPI.updateProfile({ full_name: fullName.trim() });
+      setProfile((prev) => ({ ...prev, full_name: fullName.trim() }));
+      toast.success("Profile updated.");
+    } catch {
+      toast.error("Failed to update profile.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) return <SkeletonProfile />;
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-6 max-w-lg">
+      <h2 className="text-base font-semibold text-slate-900 mb-5">
+        Profile Information
+      </h2>
+      <div className="space-y-4">
+        {/* Full Name */}
+        <div>
+          <label className="block text-base font-medium text-slate-700 mb-1.5">
+            Full Name
+          </label>
+          <input
+            type="text"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            placeholder="Your full name"
+            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition"
+          />
+        </div>
+
+        {/* Email (read-only) */}
+        <div>
+          <label className="block text-base font-medium text-slate-700 mb-1.5">
+            Email Address
+          </label>
+          <input
+            type="email"
+            value={profile.email}
+            disabled
+            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-400 bg-slate-50 cursor-not-allowed"
+          />
+          <p className="mt-1 text-xs text-slate-400">
+            Email cannot be changed. Contact support if needed.
+          </p>
+        </div>
+
+        {/* Save */}
+        <button
+          onClick={handleSave}
+          disabled={saving || fullName.trim() === profile.full_name}
+          className={clsx(
+            "inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition",
+            saving || fullName.trim() === profile.full_name
+              ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+              : "bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
+          )}
+        >
+          <Save className="w-4 h-4" />
+          {saving ? "Saving…" : "Save Changes"}
+        </button>
       </div>
-      <div className="h-64 bg-slate-200 rounded-xl animate-pulse" />
+    </div>
+  );
+}
+
+// ─── Tab: API Keys ────────────────────────────────────────────────────────────
+
+function ApiKeyCard({
+  provider,
+  entry,
+  onSaved,
+  onDeleted,
+}: {
+  provider: (typeof PROVIDERS)[number];
+  entry: ApiKeyEntry | undefined;
+  onSaved: (provider: string, masked: string) => void;
+  onDeleted: (provider: string) => void;
+}) {
+  const isSet = entry?.is_set ?? false;
+  const [inputValue, setInputValue] = useState("");
+  const [revealedValue, setRevealedValue] = useState<string | null>(null);
+  const [showRevealed, setShowRevealed] = useState(false);
+  const [savingKey, setSavingKey] = useState(false);
+  const [removingKey, setRemovingKey] = useState(false);
+  const [revealingKey, setRevealingKey] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+
+  const handleSave = async () => {
+    if (!inputValue.trim()) {
+      toast.error("API key cannot be empty.");
+      return;
+    }
+    setSavingKey(true);
+    try {
+      await settingsAPI.upsertApiKey({
+        provider: provider.id,
+        api_key: inputValue.trim(),
+      });
+      toast.success(`${provider.name} key saved.`);
+      onSaved(provider.id, inputValue.trim().slice(0, 6) + "…");
+      setInputValue("");
+      setEditMode(false);
+    } catch {
+      toast.error(`Failed to save ${provider.name} key.`);
+    } finally {
+      setSavingKey(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setRemovingKey(true);
+    try {
+      await settingsAPI.deleteApiKey(provider.id);
+      toast.success(`${provider.name} key removed.`);
+      onDeleted(provider.id);
+      setRevealedValue(null);
+      setShowRevealed(false);
+      setEditMode(false);
+    } catch {
+      toast.error(`Failed to remove ${provider.name} key.`);
+    } finally {
+      setRemovingKey(false);
+    }
+  };
+
+  const handleReveal = async () => {
+    if (revealedValue !== null) {
+      setShowRevealed((prev) => !prev);
+      return;
+    }
+    setRevealingKey(true);
+    try {
+      const res = await settingsAPI.revealApiKey(provider.id);
+      setRevealedValue(res.data.api_key ?? res.data.value ?? "");
+      setShowRevealed(true);
+    } catch {
+      toast.error(`Could not reveal ${provider.name} key.`);
+    } finally {
+      setRevealingKey(false);
+    }
+  };
+
+  const maskedDisplay =
+    revealedValue && showRevealed
+      ? revealedValue
+      : entry?.masked_value ?? "sk-…";
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-5">
+      <div className="flex items-start gap-4">
+        {/* Icon circle */}
+        <div
+          className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs font-bold"
+          style={{ backgroundColor: provider.color }}
+        >
+          {provider.initials}
+        </div>
+
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <p className="text-base font-semibold text-slate-900">
+            {provider.name}
+          </p>
+          <p className="text-sm text-slate-500 mt-0.5">{provider.description}</p>
+
+          {/* Key display / input */}
+          <div className="mt-3">
+            {isSet && !editMode ? (
+              <div className="flex items-center gap-2 flex-wrap">
+                <code className="text-sm font-mono text-slate-700 bg-slate-50 border border-slate-200 rounded px-2 py-1">
+                  {maskedDisplay}
+                </code>
+                {/* Reveal toggle */}
+                <button
+                  onClick={handleReveal}
+                  disabled={revealingKey}
+                  title={showRevealed ? "Hide key" : "Reveal key"}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                >
+                  {showRevealed ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
+                {/* Remove */}
+                <button
+                  onClick={handleDelete}
+                  disabled={removingKey}
+                  title="Remove key"
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition focus:outline-none focus:ring-2 focus:ring-red-500"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+                {/* Replace */}
+                <button
+                  onClick={() => setEditMode(true)}
+                  className="text-xs text-indigo-600 hover:underline ml-1"
+                >
+                  Replace
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <input
+                  type="password"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  placeholder={`Paste ${provider.name} API key…`}
+                  className="flex-1 border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition"
+                  onKeyDown={(e) => e.key === "Enter" && handleSave()}
+                />
+                <button
+                  onClick={handleSave}
+                  disabled={savingKey}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-1 disabled:opacity-60"
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  {savingKey ? "Saving…" : "Save"}
+                </button>
+                {editMode && (
+                  <button
+                    onClick={() => {
+                      setEditMode(false);
+                      setInputValue("");
+                    }}
+                    className="text-sm text-slate-400 hover:text-slate-600 transition"
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ApiKeysTab() {
+  const [loading, setLoading] = useState(true);
+  const [keyMap, setKeyMap] = useState<Record<string, ApiKeyEntry>>({});
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await settingsAPI.getApiKeys();
+        const entries: ApiKeyEntry[] = res.data ?? [];
+        const map: Record<string, ApiKeyEntry> = {};
+        entries.forEach((e) => {
+          map[e.provider] = e;
+        });
+        setKeyMap(map);
+      } catch {
+        toast.error("Failed to load API keys.");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  const handleSaved = (provider: string, masked: string) => {
+    setKeyMap((prev) => ({
+      ...prev,
+      [provider]: { provider, masked_value: masked, is_set: true },
+    }));
+  };
+
+  const handleDeleted = (provider: string) => {
+    setKeyMap((prev) => ({
+      ...prev,
+      [provider]: { provider, masked_value: null, is_set: false },
+    }));
+  };
+
+  if (loading) return <SkeletonApiKeys />;
+
+  return (
+    <div className="space-y-4 max-w-2xl">
+      {/* Info note */}
+      <div className="flex items-start gap-2 bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3">
+        <Key className="w-4 h-4 text-indigo-600 mt-0.5 flex-shrink-0" />
+        <p className="text-sm text-indigo-700">
+          Keys are encrypted at rest. Used by pipelines for AI notebook
+          generation.
+        </p>
+      </div>
+
+      {PROVIDERS.map((provider) => (
+        <ApiKeyCard
+          key={provider.id}
+          provider={provider}
+          entry={keyMap[provider.id]}
+          onSaved={handleSaved}
+          onDeleted={handleDeleted}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ─── Tab: Security ────────────────────────────────────────────────────────────
+
+function SecurityTab() {
+  const [currentPw, setCurrentPw] = useState("");
+  const [newPw, setNewPw] = useState("");
+  const [confirmPw, setConfirmPw] = useState("");
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const newPwTooShort = newPw.length > 0 && newPw.length < 8;
+  const confirmMismatch = confirmPw.length > 0 && confirmPw !== newPw;
+
+  const canSubmit =
+    currentPw.length > 0 &&
+    newPw.length >= 8 &&
+    confirmPw === newPw &&
+    !saving;
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canSubmit) return;
+    setSaving(true);
+    try {
+      await settingsAPI.changePassword({
+        current_password: currentPw,
+        new_password: newPw,
+      });
+      toast.success("Password changed successfully.");
+      setCurrentPw("");
+      setNewPw("");
+      setConfirmPw("");
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.detail ?? "Failed to change password.";
+      toast.error(msg);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const PasswordInput = ({
+    label,
+    value,
+    onChange,
+    show,
+    onToggleShow,
+    error,
+    placeholder,
+  }: {
+    label: string;
+    value: string;
+    onChange: (v: string) => void;
+    show: boolean;
+    onToggleShow: () => void;
+    error?: string;
+    placeholder?: string;
+  }) => (
+    <div>
+      <label className="block text-base font-medium text-slate-700 mb-1.5">
+        {label}
+      </label>
+      <div className="relative">
+        <input
+          type={show ? "text" : "password"}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className={clsx(
+            "w-full border rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400 pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition",
+            error ? "border-red-400" : "border-slate-200"
+          )}
+        />
+        <button
+          type="button"
+          tabIndex={-1}
+          onClick={onToggleShow}
+          className="absolute inset-y-0 right-0 px-3 flex items-center text-slate-400 hover:text-slate-600 transition"
+        >
+          {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+        </button>
+      </div>
+      {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
     </div>
   );
 
-  const sections = [
+  return (
+    <div className="space-y-6 max-w-lg">
+      {/* Change password card */}
+      <div className="bg-white rounded-xl border border-slate-200 p-6">
+        <h2 className="text-base font-semibold text-slate-900 mb-5">
+          Change Password
+        </h2>
+        <form onSubmit={handleChangePassword} className="space-y-4">
+          <PasswordInput
+            label="Current Password"
+            value={currentPw}
+            onChange={setCurrentPw}
+            show={showCurrent}
+            onToggleShow={() => setShowCurrent((s) => !s)}
+            placeholder="Enter current password"
+          />
+          <PasswordInput
+            label="New Password"
+            value={newPw}
+            onChange={setNewPw}
+            show={showNew}
+            onToggleShow={() => setShowNew((s) => !s)}
+            error={newPwTooShort ? "Password must be at least 8 characters." : undefined}
+            placeholder="At least 8 characters"
+          />
+          <PasswordInput
+            label="Confirm New Password"
+            value={confirmPw}
+            onChange={setConfirmPw}
+            show={showConfirm}
+            onToggleShow={() => setShowConfirm((s) => !s)}
+            error={confirmMismatch ? "Passwords do not match." : undefined}
+            placeholder="Re-enter new password"
+          />
+          <button
+            type="submit"
+            disabled={!canSubmit}
+            className={clsx(
+              "inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition",
+              canSubmit
+                ? "bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
+                : "bg-slate-100 text-slate-400 cursor-not-allowed"
+            )}
+          >
+            <Shield className="w-4 h-4" />
+            {saving ? "Updating…" : "Update Password"}
+          </button>
+        </form>
+      </div>
+
+      {/* Danger zone */}
+      <div className="bg-white rounded-xl border border-red-200 p-6">
+        <div className="flex items-center gap-2 mb-3">
+          <AlertTriangle className="w-4 h-4 text-red-500" />
+          <h2 className="text-base font-semibold text-red-600">Danger Zone</h2>
+        </div>
+        <p className="text-sm text-slate-500 mb-4">
+          Permanently delete your account and all associated data. This action
+          cannot be undone.
+        </p>
+        <button
+          disabled
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
+          title="Contact support to delete your account"
+        >
+          <Trash2 className="w-4 h-4" />
+          Delete Account — Contact support to delete your account
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Tab: Notifications ───────────────────────────────────────────────────────
+
+function NotificationsTab() {
+  const [loading, setLoading] = useState(true);
+  const [prefs, setPrefs] = useState<NotificationPrefs>({
+    pipeline_completed: false,
+    pipeline_failed: true,
+    weekly_digest: false,
+  });
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await settingsAPI.getNotifications();
+        setPrefs(res.data);
+      } catch {
+        toast.error("Failed to load notification preferences.");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  const handleToggle = async (
+    key: keyof NotificationPrefs,
+    value: boolean
+  ) => {
+    const updated = { ...prefs, [key]: value };
+    setPrefs(updated);
+    try {
+      await settingsAPI.updateNotifications(updated);
+      toast.success("Saved", { duration: 1500 });
+    } catch {
+      // Revert on failure
+      setPrefs(prefs);
+      toast.error("Failed to save preference.");
+    }
+  };
+
+  const notifications: {
+    key: keyof NotificationPrefs;
+    title: string;
+    description: string;
+  }[] = [
     {
-      icon: User,
-      title: "Account",
-      description: "Manage your profile and authentication",
-      sprint: "Sprint 2",
+      key: "pipeline_completed",
+      title: "Pipeline completed",
+      description:
+        "Receive an email notification when a pipeline run finishes successfully.",
     },
     {
-      icon: Key,
-      title: "API Keys",
-      description: "LLM provider keys and access tokens",
-      sprint: "Sprint 2",
+      key: "pipeline_failed",
+      title: "Pipeline failed",
+      description:
+        "Get alerted immediately when a pipeline run encounters an error.",
     },
     {
-      icon: Shield,
-      title: "Security",
-      description: "Password, 2FA, and session management",
-      sprint: "Sprint 2",
-    },
-    {
-      icon: Bell,
-      title: "Notifications",
-      description: "Pipeline alerts and digest emails",
-      sprint: "Sprint 3",
+      key: "weekly_digest",
+      title: "Weekly digest",
+      description:
+        "A weekly summary email with pipeline activity, stats, and highlights.",
     },
   ];
 
-  return (
-    <div className="p-8 max-w-4xl">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
-          <Settings className="w-7 h-7 text-indigo-600" />
-          Settings
-        </h1>
-        <p className="text-slate-600 mt-1">Manage your account, API keys, and platform settings</p>
-      </div>
-
-      {/* Coming soon section cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-        {sections.map((section) => {
-          const Icon = section.icon;
-          return (
-            <div
-              key={section.title}
-              className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 opacity-70 select-none"
-            >
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Icon className="w-5 h-5 text-indigo-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-semibold text-slate-900 text-sm">{section.title}</h3>
-                    <span className="text-xs bg-indigo-50 text-indigo-600 border border-indigo-100 px-2 py-0.5 rounded-full font-medium">
-                      {section.sprint}
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-400">{section.description}</p>
-                </div>
-              </div>
+  if (loading)
+    return (
+      <div className="space-y-4 max-w-lg animate-pulse">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={i}
+            className="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4"
+          >
+            <div className="flex-1 space-y-2">
+              <div className="h-4 bg-slate-200 rounded w-40" />
+              <div className="h-3 bg-slate-200 rounded w-72" />
             </div>
-          );
-        })}
-      </div>
-
-      {/* Main placeholder card */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-        <div className="flex flex-col items-center text-center py-10">
-          <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mb-5">
-            <Key className="w-8 h-8 text-indigo-600" />
+            <div className="w-11 h-6 bg-slate-200 rounded-full flex-shrink-0" />
           </div>
-          <span className="inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-600 border border-indigo-100 text-xs font-semibold px-3 py-1 rounded-full mb-4">
-            Coming in Sprint 2
-          </span>
-          <p className="text-slate-900 font-semibold text-lg mb-2">Settings Panel</p>
-          <p className="text-slate-400 text-sm max-w-sm leading-relaxed">
-            LLM provider management, API key configuration, and account settings will be available in Sprint 2.
-            Your current configuration is fully operational.
+        ))}
+      </div>
+    );
+
+  return (
+    <div className="space-y-4 max-w-lg">
+      <p className="text-sm text-slate-500 mb-2">
+        Manage how and when you receive email notifications.
+      </p>
+      {notifications.map(({ key, title, description }) => (
+        <div
+          key={key}
+          className="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4"
+        >
+          <div className="flex-1 min-w-0">
+            <p className="text-base font-medium text-slate-900">{title}</p>
+            <p className="text-sm text-slate-500 mt-0.5">{description}</p>
+          </div>
+          <Toggle
+            checked={prefs[key]}
+            onChange={(val) => handleToggle(key, val)}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
+
+const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
+  { id: "profile", label: "Profile", icon: User },
+  { id: "api-keys", label: "API Keys", icon: Key },
+  { id: "security", label: "Security", icon: Shield },
+  { id: "notifications", label: "Notifications", icon: Bell },
+];
+
+export default function SettingsPage() {
+  const [activeTab, setActiveTab] = useState<Tab>("profile");
+
+  return (
+    <div className="min-h-screen bg-slate-50 p-8">
+      <div className="max-w-3xl mx-auto">
+        {/* Page header */}
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
+            <Settings className="w-7 h-7 text-indigo-600" />
+            Settings
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Manage your account, API keys, and preferences
           </p>
+        </div>
+
+        {/* Tab bar */}
+        <div className="flex gap-1 bg-slate-100 p-1 rounded-xl mb-6 w-fit">
+          {TABS.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => setActiveTab(id)}
+              className={clsx(
+                "inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
+                activeTab === id
+                  ? "bg-indigo-600 text-white shadow-sm"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-200"
+              )}
+            >
+              <Icon className="w-4 h-4" />
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Tab content */}
+        <div>
+          {activeTab === "profile" && <ProfileTab />}
+          {activeTab === "api-keys" && <ApiKeysTab />}
+          {activeTab === "security" && <SecurityTab />}
+          {activeTab === "notifications" && <NotificationsTab />}
         </div>
       </div>
     </div>

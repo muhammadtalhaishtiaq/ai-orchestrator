@@ -75,6 +75,26 @@ export const dashboardAPI = {
   getSummary: () => api.get('/dashboard/summary'),
 };
 
+// Settings
+export const settingsAPI = {
+  getProfile:   () => api.get('/settings/profile'),
+  updateProfile:(data: { full_name: string }) => api.put('/settings/profile', data),
+  changePassword:(data: { current_password: string; new_password: string }) =>
+    api.put('/settings/password', data),
+  getApiKeys:   () => api.get('/settings/api-keys'),
+  upsertApiKey: (data: { provider: string; api_key: string }) =>
+    api.post('/settings/api-keys', data),
+  deleteApiKey: (provider: string) => api.delete(`/settings/api-keys/${provider}`),
+  revealApiKey: (provider: string) => api.get(`/settings/api-keys/${provider}/reveal`),
+  getNotifications:    () => api.get('/settings/notifications'),
+  updateNotifications: (data: any) => api.put('/settings/notifications', data),
+};
+
+// Analytics
+export const analyticsAPI = {
+  getOverview: () => api.get('/analytics/overview'),
+};
+
 // Pipelines
 export const pipelinesAPI = {
   list: (projectId?: string) => api.get('/pipelines/', { params: projectId ? { project_id: projectId } : undefined }),

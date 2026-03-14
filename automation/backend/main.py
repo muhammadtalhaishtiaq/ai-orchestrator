@@ -5,6 +5,8 @@ from app.api import auth, github, notebooks, dashboard
 from app.api import pipeline_runner
 from app.api import pipelines as pipelines_api
 from app.api import projects as projects_api
+from app.api import settings as settings_api
+from app.api import analytics as analytics_api
 from app.config import settings
 from app.services.scheduler_service import get_scheduler
 import logging
@@ -45,6 +47,8 @@ app.include_router(dashboard.router, prefix="/api/v1")
 app.include_router(pipeline_runner.router, prefix="/api/v1")
 app.include_router(pipelines_api.router, prefix="/api/v1")
 app.include_router(projects_api.router, prefix="/api/v1")
+app.include_router(settings_api.router, prefix="/api/v1")
+app.include_router(analytics_api.router, prefix="/api/v1")
 
 @app.get("/")
 async def root():
