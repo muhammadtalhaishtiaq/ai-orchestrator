@@ -80,8 +80,11 @@ def _call_openai_compatible(
     model: str,
     prompt: str,
     extra_headers: Optional[dict] = None,
+    timeout: int = 120,
 ) -> str:
-    """Shared caller for OpenAI-compatible APIs (OpenAI, AIML, Kimi)."""
+    """Shared caller for OpenAI-compatible APIs (OpenAI, AIML, Kimi).
+    Retries once on timeout before raising.
+    """
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
@@ -96,11 +99,26 @@ def _call_openai_compatible(
         "temperature": 0.4,
         "max_tokens": 4096,
     }
-    resp = requests.post(base_url, headers=headers, json=payload, timeout=90)
-    if not resp.ok:
-        logger.error(f"LLM call failed — URL: {resp.url} | status: {resp.status_code} | body: {resp.text[:400]}")
-    resp.raise_for_status()
-    return resp.json()["choices"][0]["message"]["content"]
+
+    last_exc = None
+    for attempt in range(1, 3):   # 2 attempts total
+        try:
+            logger.info(f"LLM request attempt {attempt}/2 → {base_url} model={model}")
+            resp = requests.post(base_url, headers=headers, json=payload, timeout=timeout)
+            if not resp.ok:
+                logger.error(f"LLM call failed — URL: {resp.url} | status: {resp.status_code} | body: {resp.text[:400]}")
+            resp.raise_for_status()
+            return resp.json()["choices"][0]["message"]["content"]
+        except requests.exceptions.Timeout as e:
+            last_exc = e
+            logger.warning(f"LLM timeout on attempt {attempt}/2 (timeout={timeout}s) — {'retrying…' if attempt == 1 else 'giving up'}")
+        except Exception as e:
+            raise   # non-timeout errors fail immediately, no retry
+
+    raise RuntimeError(
+        f"LLM call timed out after 2 attempts ({timeout}s each). "
+        "Moonshot may be overloaded — try again in a few minutes."
+    ) from last_exc
 
 
 def _call_anthropic(api_key: str, model: str, prompt: str) -> str:
@@ -196,7 +214,8 @@ def generate_notebook_cells(
     elif provider == "kimi":
         raw = _call_openai_compatible(
             "https://api.moonshot.ai/v1/chat/completions",
-            api_key, model, prompt
+            api_key, model, prompt,
+            timeout=180,   # Kimi models can be slower — allow 3 min per attempt
         )
     else:
         raise ValueError(f"Unsupported provider: {provider}")

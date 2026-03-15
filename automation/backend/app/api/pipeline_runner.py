@@ -159,9 +159,10 @@ async def _execute_pipeline_run(
         _log(4, f"[4/{len(STEPS)}] Generating notebook content via {gen_method}...")
         _run_status[run_id]["current_step"] = 4
 
-        # Run the blocking LLM HTTP call in a thread-pool so the event loop isn't blocked
+        # Run the blocking LLM HTTP call in a thread-pool so the event loop isn't blocked.
+        # A heartbeat coroutine runs concurrently to update the UI with elapsed time.
         loop = asyncio.get_event_loop()
-        cells = await loop.run_in_executor(
+        llm_future = loop.run_in_executor(
             None,
             lambda: build_cells(
                 notebook_name=nb_name,
@@ -173,8 +174,27 @@ async def _execute_pipeline_run(
             )
         )
 
+        # Heartbeat: update log message every 10s so UI shows progress instead of freezing
+        start_ts = datetime.utcnow()
+        while not llm_future.done():
+            await asyncio.sleep(10)
+            if llm_future.done():
+                break
+            elapsed = int((datetime.utcnow() - start_ts).total_seconds())
+            logs[-1]["message"] = (
+                f"[4/{len(STEPS)}] Generating notebook content via {gen_method}... "
+                f"⏳ Waiting for LLM response ({elapsed}s elapsed)"
+            )
+            _run_status[run_id]["logs"] = list(logs)
+
+        cells = await llm_future  # raises if LLM call failed
+
         logs[-1]["status"] = "done"
-        logs[-1]["message"] += f" ✓ {len(cells)} cells via {gen_method}"
+        elapsed_final = int((datetime.utcnow() - start_ts).total_seconds())
+        logs[-1]["message"] = (
+            f"[4/{len(STEPS)}] Generating notebook content via {gen_method} "
+            f"✓ {len(cells)} cells ({elapsed_final}s)"
+        )
         _run_status[run_id]["logs"] = list(logs)
 
         # ── Step 5: Build .ipynb ──────────────────────────────────────────────
