@@ -352,10 +352,32 @@ async def regenerate_notebook(
         raise HTTPException(404, "Notebook not found")
 
     nb_record = result.data[0]
+
+    # Fetch user LLM config — fail loudly if not configured
+    from app.api.settings import _get_user_settings, _get_llm_default, _decrypt, SUPPORTED_PROVIDERS
+    us      = _get_user_settings(current_user["id"])
+    llm_cfg = _get_llm_default(current_user["id"])
+    provider = llm_cfg.get("provider")
+
+    if not provider:
+        raise HTTPException(400, "No default LLM provider set. Go to Settings → Default LLM and configure one.")
+    if provider not in SUPPORTED_PROVIDERS:
+        raise HTTPException(400, f"Unsupported LLM provider '{provider}'.")
+
+    api_keys = us.get("api_keys", {}) or {}
+    if provider not in api_keys:
+        raise HTTPException(400, f"No API key saved for '{provider}'. Go to Settings → API Keys and add one.")
+
+    llm_api_key = _decrypt(api_keys[provider])
+    llm_model   = llm_cfg.get("model") or None
+
     cells_data = _build_notebook_cells(
         notebook_name=nb_record["name"],
         folder=nb_record["folder"],
         path=nb_record["path"],
+        llm_provider=provider,
+        llm_model=llm_model,
+        llm_api_key=llm_api_key,
     )
 
     # Build full .ipynb using the shared generator service

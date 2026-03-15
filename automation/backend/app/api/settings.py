@@ -274,7 +274,7 @@ PROVIDER_MODELS = {
     "anthropic": ["claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022", "claude-3-opus-20240229"],
     "gemini":    ["gemini-1.5-pro", "gemini-1.5-flash", "gemini-2.0-flash"],
     "aiml-api":  ["gpt-4o", "gpt-4o-mini", "claude-3-5-sonnet", "gemini-1.5-pro"],
-    "kimi":      ["kimi-k2-5", "kimi-k2", "moonshot-v1-8k", "moonshot-v1-32k", "moonshot-v1-128k", "moonshot-v1-5"],
+    "kimi":      ["kimi-k2-turbo-preview", "kimi-k2.5", "kimi-k2-0905-preview", "kimi-k2-0711-preview", "kimi-k2-thinking-turbo", "kimi-k2-thinking", "moonshot-v1-auto", "moonshot-v1-8k", "moonshot-v1-32k", "moonshot-v1-128k"],
 }
 
 

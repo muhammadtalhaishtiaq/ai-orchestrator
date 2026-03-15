@@ -23,7 +23,7 @@ DEFAULT_MODELS = {
     "anthropic": "claude-3-5-haiku-20241022",
     "gemini":    "gemini-1.5-flash",
     "aiml-api":  "gpt-4o-mini",
-    "kimi":      "moonshot-v1-8k",
+    "kimi":      "kimi-k2-turbo-preview",
 }
 
 # ── System prompt ─────────────────────────────────────────────────────────────
@@ -97,6 +97,8 @@ def _call_openai_compatible(
         "max_tokens": 4096,
     }
     resp = requests.post(base_url, headers=headers, json=payload, timeout=90)
+    if not resp.ok:
+        logger.error(f"LLM call failed — URL: {resp.url} | status: {resp.status_code} | body: {resp.text[:400]}")
     resp.raise_for_status()
     return resp.json()["choices"][0]["message"]["content"]
 
@@ -193,7 +195,7 @@ def generate_notebook_cells(
         )
     elif provider == "kimi":
         raw = _call_openai_compatible(
-            "https://api.moonshot.cn/v1/chat/completions",
+            "https://api.moonshot.ai/v1/chat/completions",
             api_key, model, prompt
         )
     else:
