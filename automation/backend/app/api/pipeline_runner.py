@@ -129,42 +129,72 @@ async def _execute_pipeline_run(
         logs[-1]["message"] += " ✓ Structure valid"
         _run_status[run_id]["logs"] = list(logs)
 
-        # ── Step 4: Generate cells (LLM or template) ─────────────────────────
-        _log(4, f"[4/{len(STEPS)}] Generating notebook content...")
+        # ── Step 4: Generate cells via LLM ───────────────────────────────────
+        _log(4, f"[4/{len(STEPS)}] Generating notebook content via LLM...")
 
-        # Fetch user's default LLM config
-        llm_provider = None
-        llm_model    = None
-        llm_api_key  = None
-        try:
-            from app.api.settings import _get_user_settings, _get_llm_default, _decrypt, SUPPORTED_PROVIDERS
-            us       = _get_user_settings(user_id)
-            llm_cfg  = _get_llm_default(user_id)
-            provider = llm_cfg.get("provider")
-            if provider and provider in SUPPORTED_PROVIDERS:
-                api_keys = us.get("api_keys", {}) or {}
-                if provider in api_keys:
-                    llm_provider = provider
-                    llm_model    = llm_cfg.get("model") or None
-                    llm_api_key  = _decrypt(api_keys[provider])
-        except Exception as e:
-            logger.warning(f"Could not load LLM config: {e}")
+        # Fetch user's default LLM config — fail loudly if not set
+        from app.api.settings import _get_user_settings, _get_llm_default, _decrypt, SUPPORTED_PROVIDERS
+        us      = _get_user_settings(user_id)
+        llm_cfg = _get_llm_default(user_id)
+        provider = llm_cfg.get("provider")
 
-        gen_method = f"{llm_provider}/{llm_model or 'default'}" if llm_provider else "template"
-        _log(4, f"[4/{len(STEPS)}] Generating notebook content ({gen_method})...")
+        if not provider:
+            raise RuntimeError(
+                "No default LLM provider set. Go to Settings → Default LLM and configure one."
+            )
+        if provider not in SUPPORTED_PROVIDERS:
+            raise RuntimeError(f"Unsupported LLM provider '{provider}'.")
+
+        api_keys = us.get("api_keys", {}) or {}
+        if provider not in api_keys:
+            raise RuntimeError(
+                f"No API key saved for '{provider}'. Go to Settings → API Keys and add one."
+            )
+
+        llm_provider = provider
+        llm_model    = llm_cfg.get("model") or None
+        llm_api_key  = _decrypt(api_keys[provider])
+
+        gen_method = f"{llm_provider}/{llm_model or 'default'}"
+        _log(4, f"[4/{len(STEPS)}] Generating notebook content via {gen_method}...")
         _run_status[run_id]["current_step"] = 4
 
-        cells = build_cells(
-            notebook_name=nb_name,
-            folder=nb_folder,
-            path=nb_path,
-            llm_provider=llm_provider,
-            llm_model=llm_model,
-            llm_api_key=llm_api_key,
+        # Run the blocking LLM HTTP call in a thread-pool so the event loop isn't blocked.
+        # A heartbeat coroutine runs concurrently to update the UI with elapsed time.
+        loop = asyncio.get_event_loop()
+        llm_future = loop.run_in_executor(
+            None,
+            lambda: build_cells(
+                notebook_name=nb_name,
+                folder=nb_folder,
+                path=nb_path,
+                llm_provider=llm_provider,
+                llm_model=llm_model,
+                llm_api_key=llm_api_key,
+            )
         )
 
+        # Heartbeat: update log message every 10s so UI shows progress instead of freezing
+        start_ts = datetime.utcnow()
+        while not llm_future.done():
+            await asyncio.sleep(10)
+            if llm_future.done():
+                break
+            elapsed = int((datetime.utcnow() - start_ts).total_seconds())
+            logs[-1]["message"] = (
+                f"[4/{len(STEPS)}] Generating notebook content via {gen_method}... "
+                f"⏳ Waiting for LLM response ({elapsed}s elapsed)"
+            )
+            _run_status[run_id]["logs"] = list(logs)
+
+        cells = await llm_future  # raises if LLM call failed
+
         logs[-1]["status"] = "done"
-        logs[-1]["message"] += f" ✓ {len(cells)} cells via {gen_method}"
+        elapsed_final = int((datetime.utcnow() - start_ts).total_seconds())
+        logs[-1]["message"] = (
+            f"[4/{len(STEPS)}] Generating notebook content via {gen_method} "
+            f"✓ {len(cells)} cells ({elapsed_final}s)"
+        )
         _run_status[run_id]["logs"] = list(logs)
 
         # ── Step 5: Build .ipynb ──────────────────────────────────────────────

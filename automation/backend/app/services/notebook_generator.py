@@ -1,6 +1,6 @@
 """
 Notebook generation service.
-Tries LLM-based generation first; falls back to hardcoded template.
+Uses LLM-based generation only — no fallback to hardcoded templates.
 Used by both the /notebooks/{id}/regenerate endpoint and the pipeline runner.
 """
 import json
@@ -26,35 +26,33 @@ def build_cells(
     llm_api_key: Optional[str] = None,
 ) -> list:
     """
-    Build notebook cells.
-    If llm_provider + llm_api_key are provided, calls the LLM service.
-    Falls back to hardcoded template on any LLM error.
+    Build notebook cells using the configured LLM.
+    Requires llm_provider + llm_api_key — raises RuntimeError if not provided.
+    NO fallback to hardcoded templates.
 
     Returns a list of {'cell_type': 'markdown'|'code', 'source': str} dicts.
     """
-    # ── Try LLM generation ────────────────────────────────────────────────────
-    if llm_provider and llm_api_key:
-        try:
-            from app.services.llm_service import generate_notebook_cells
-            cfg = NOTEBOOK_CONFIG
-            difficulty_map = cfg.get("folder_difficulty_map", {})
-            difficulty = difficulty_map.get(folder, "intermediate")
-            cells = generate_notebook_cells(
-                topic=notebook_name,
-                folder=folder,
-                difficulty=difficulty,
-                provider=llm_provider,
-                model=llm_model,
-                api_key=llm_api_key,
-            )
-            logger.info(f"LLM generated {len(cells)} cells for '{notebook_name}'")
-            return cells
-        except Exception as e:
-            logger.warning(f"LLM generation failed for '{notebook_name}': {e}. Falling back to template.")
+    if not llm_provider or not llm_api_key:
+        raise RuntimeError(
+            "No LLM provider configured. Go to Settings → Default LLM and save an API key + select a provider."
+        )
 
-    # ── Hardcoded template fallback ───────────────────────────────────────────
-    logger.info(f"Using template for '{notebook_name}' (no LLM config)")
-    return _template_cells(notebook_name, folder, path)
+    from app.services.llm_service import generate_notebook_cells
+    cfg = NOTEBOOK_CONFIG
+    difficulty_map = cfg.get("folder_difficulty_map", {})
+    difficulty = difficulty_map.get(folder, "intermediate")
+
+    logger.info(f"Calling LLM ({llm_provider}/{llm_model or 'default'}) for '{notebook_name}'...")
+    cells = generate_notebook_cells(
+        topic=notebook_name,
+        folder=folder,
+        difficulty=difficulty,
+        provider=llm_provider,
+        model=llm_model,
+        api_key=llm_api_key,
+    )
+    logger.info(f"LLM returned {len(cells)} cells for '{notebook_name}' via {llm_provider}")
+    return cells
 
 
 def _template_cells(notebook_name: str, folder: str, path: str) -> list:
