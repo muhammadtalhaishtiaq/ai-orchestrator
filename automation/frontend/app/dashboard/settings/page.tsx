@@ -12,6 +12,8 @@ import {
   Trash2,
   Save,
   AlertTriangle,
+  Zap,
+  CheckCircle,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import clsx from "clsx";
@@ -425,6 +427,122 @@ function ApiKeyCard({
   );
 }
 
+
+// ─── Default LLM Selector ─────────────────────────────────────────────────────
+
+const PROVIDER_MODELS: Record<string, string[]> = {
+  openai:    ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo"],
+  anthropic: ["claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022", "claude-3-opus-20240229"],
+  gemini:    ["gemini-1.5-pro", "gemini-1.5-flash", "gemini-2.0-flash"],
+  "aiml-api": ["gpt-4o", "gpt-4o-mini", "claude-3-5-sonnet", "gemini-1.5-pro"],
+  kimi:      ["kimi-k2-5", "kimi-k2", "moonshot-v1-8k", "moonshot-v1-32k", "moonshot-v1-128k", "moonshot-v1-5"],
+};
+
+function DefaultLlmSelector({ keyMap }: { keyMap: Record<string, ApiKeyEntry> }) {
+  const [provider, setProvider] = useState<string>("");
+  const [model, setModel] = useState<string>("");
+  const [saving, setSaving] = useState(false);
+  const [current, setCurrent] = useState<{ provider: string; model: string } | null>(null);
+
+  useEffect(() => {
+    settingsAPI.getLlmDefault()
+      .then(({ data }) => {
+        if (data.provider) {
+          setCurrent({ provider: data.provider, model: data.model || "" });
+          setProvider(data.provider);
+          setModel(data.model || "");
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const availableProviders = PROVIDERS.filter((p) => keyMap[p.id]?.is_set);
+  const models = provider ? (PROVIDER_MODELS[provider] || []) : [];
+
+  const handleSave = async () => {
+    if (!provider) { toast.error("Select a provider first."); return; }
+    setSaving(true);
+    try {
+      await settingsAPI.setLlmDefault({ provider, model: model || undefined });
+      setCurrent({ provider, model });
+      toast.success(`Default LLM set to ${provider}${model ? " / " + model : ""}`);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.detail || "Failed to set default LLM.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-xl border-2 border-indigo-200 p-5">
+      <div className="flex items-center gap-2 mb-4">
+        <Zap className="w-5 h-5 text-indigo-500" />
+        <div>
+          <h3 className="text-sm font-bold text-slate-900">Default LLM for Notebook Generation</h3>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Pipelines will use this provider to generate real AI content for each notebook.
+          </p>
+        </div>
+      </div>
+
+      {current && (
+        <div className="flex items-center gap-2 mb-4 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+          <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
+          <span className="text-sm text-green-700">
+            Currently: <strong>{current.provider}</strong>
+            {current.model && <> / <strong>{current.model}</strong></>}
+          </span>
+        </div>
+      )}
+
+      {availableProviders.length === 0 ? (
+        <p className="text-sm text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+          Save at least one API key above to enable LLM generation.
+        </p>
+      ) : (
+        <div className="flex items-end gap-3 flex-wrap">
+          <div>
+            <label className="block text-xs font-medium text-slate-600 mb-1">Provider</label>
+            <select
+              value={provider}
+              onChange={(e) => { setProvider(e.target.value); setModel(""); }}
+              className="border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600 bg-white min-w-[140px]"
+            >
+              <option value="">Choose provider…</option>
+              {availableProviders.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          </div>
+          {provider && models.length > 0 && (
+            <div>
+              <label className="block text-xs font-medium text-slate-600 mb-1">Model</label>
+              <select
+                value={model}
+                onChange={(e) => setModel(e.target.value)}
+                className="border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600 bg-white min-w-[200px]"
+              >
+                <option value="">Default model</option>
+                {models.map((m) => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
+            </div>
+          )}
+          <button
+            onClick={handleSave}
+            disabled={saving || !provider}
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          >
+            <Save className="w-3.5 h-3.5" />
+            {saving ? "Saving…" : "Set as Default"}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ApiKeysTab() {
   const [loading, setLoading] = useState(true);
   const [keyMap, setKeyMap] = useState<Record<string, ApiKeyEntry>>({});
@@ -433,7 +551,7 @@ function ApiKeysTab() {
     (async () => {
       try {
         const res = await settingsAPI.getApiKeys();
-        const entries: ApiKeyEntry[] = res.data ?? [];
+        const entries: ApiKeyEntry[] = res.data?.api_keys ?? [];
         const map: Record<string, ApiKeyEntry> = {};
         entries.forEach((e) => {
           map[e.provider] = e;
@@ -465,6 +583,9 @@ function ApiKeysTab() {
 
   return (
     <div className="space-y-4 max-w-2xl">
+      {/* Default LLM Selector */}
+      <DefaultLlmSelector keyMap={keyMap} />
+
       {/* Info note */}
       <div className="flex items-start gap-2 bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3">
         <Key className="w-4 h-4 text-indigo-600 mt-0.5 flex-shrink-0" />

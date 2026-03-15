@@ -9,7 +9,10 @@ import uuid
 import os
 import tempfile
 import asyncio
+import logging
 from datetime import datetime
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/pipeline", tags=["Pipeline Runner"])
 
@@ -126,13 +129,42 @@ async def _execute_pipeline_run(
         logs[-1]["message"] += " ✓ Structure valid"
         _run_status[run_id]["logs"] = list(logs)
 
-        # ── Step 4: Generate cells ────────────────────────────────────────────
-        _log(4, f"[4/{len(STEPS)}] Generating notebook content from config...")
+        # ── Step 4: Generate cells (LLM or template) ─────────────────────────
+        _log(4, f"[4/{len(STEPS)}] Generating notebook content...")
 
-        cells = build_cells(notebook_name=nb_name, folder=nb_folder, path=nb_path)
+        # Fetch user's default LLM config
+        llm_provider = None
+        llm_model    = None
+        llm_api_key  = None
+        try:
+            from app.api.settings import _get_user_settings, _get_llm_default, _decrypt, SUPPORTED_PROVIDERS
+            us       = _get_user_settings(user_id)
+            llm_cfg  = _get_llm_default(user_id)
+            provider = llm_cfg.get("provider")
+            if provider and provider in SUPPORTED_PROVIDERS:
+                api_keys = us.get("api_keys", {}) or {}
+                if provider in api_keys:
+                    llm_provider = provider
+                    llm_model    = llm_cfg.get("model") or None
+                    llm_api_key  = _decrypt(api_keys[provider])
+        except Exception as e:
+            logger.warning(f"Could not load LLM config: {e}")
+
+        gen_method = f"{llm_provider}/{llm_model or 'default'}" if llm_provider else "template"
+        _log(4, f"[4/{len(STEPS)}] Generating notebook content ({gen_method})...")
+        _run_status[run_id]["current_step"] = 4
+
+        cells = build_cells(
+            notebook_name=nb_name,
+            folder=nb_folder,
+            path=nb_path,
+            llm_provider=llm_provider,
+            llm_model=llm_model,
+            llm_api_key=llm_api_key,
+        )
 
         logs[-1]["status"] = "done"
-        logs[-1]["message"] += f" ✓ {len(cells)} cells generated"
+        logs[-1]["message"] += f" ✓ {len(cells)} cells via {gen_method}"
         _run_status[run_id]["logs"] = list(logs)
 
         # ── Step 5: Build .ipynb ──────────────────────────────────────────────

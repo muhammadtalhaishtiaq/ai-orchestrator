@@ -164,16 +164,16 @@ async def list_api_keys(current_user: dict = Depends(get_current_user)):
             plain = _decrypt(enc_val)
             masked[provider] = {
                 "provider": provider,
-                "masked": _mask(plain),
+                "masked_value": _mask(plain),
                 "is_set": True,
             }
         except Exception:
-            masked[provider] = {"provider": provider, "masked": "****", "is_set": True}
+            masked[provider] = {"provider": provider, "masked_value": "****", "is_set": True}
 
     # Always return all supported providers
     for p in SUPPORTED_PROVIDERS:
         if p not in masked:
-            masked[p] = {"provider": p, "masked": None, "is_set": False}
+            masked[p] = {"provider": p, "masked_value": None, "is_set": False}
 
     return {"api_keys": list(masked.values())}
 
@@ -260,3 +260,82 @@ async def update_notification_prefs(
         "notification_prefs": data.model_dump()
     })
     return {"message": "Notification preferences saved", **data.model_dump()}
+
+
+# ── Default LLM ───────────────────────────────────────────────────────────────
+
+class DefaultLlmUpdate(BaseModel):
+    provider: str
+    model: Optional[str] = None
+
+
+PROVIDER_MODELS = {
+    "openai":    ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo"],
+    "anthropic": ["claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022", "claude-3-opus-20240229"],
+    "gemini":    ["gemini-1.5-pro", "gemini-1.5-flash", "gemini-2.0-flash"],
+    "aiml-api":  ["gpt-4o", "gpt-4o-mini", "claude-3-5-sonnet", "gemini-1.5-pro"],
+    "kimi":      ["kimi-k2-5", "kimi-k2", "moonshot-v1-8k", "moonshot-v1-32k", "moonshot-v1-128k", "moonshot-v1-5"],
+}
+
+
+def _get_llm_default(user_id: str) -> dict:
+    """Read llm_default stored inside notification_prefs JSONB (no extra column needed)."""
+    row = _get_user_settings(user_id)
+    prefs = row.get("notification_prefs", {}) or {}
+    return prefs.get("__llm_default__", {}) or {}
+
+
+def _set_llm_default(user_id: str, provider: str, model: Optional[str]):
+    """Persist llm_default inside notification_prefs JSONB."""
+    row = _get_user_settings(user_id)
+    prefs = dict(row.get("notification_prefs", {}) or {})
+    prefs["__llm_default__"] = {"provider": provider, "model": model}
+    try:
+        existing = supabase_admin.table("user_settings").select("id").eq("user_id", user_id).execute()
+        if existing.data:
+            supabase_admin.table("user_settings") \
+                .update({"notification_prefs": prefs}) \
+                .eq("user_id", user_id).execute()
+        else:
+            supabase_admin.table("user_settings").insert({
+                "user_id": user_id,
+                "notification_prefs": prefs,
+            }).execute()
+    except Exception as e:
+        raise HTTPException(500, f"Failed to save LLM default: {e}")
+
+
+@router.get("/llm-default")
+async def get_llm_default(current_user: dict = Depends(get_current_user)):
+    """Get the user's default LLM provider and model."""
+    llm = _get_llm_default(current_user["id"])
+    return {
+        "provider":        llm.get("provider", None),
+        "model":           llm.get("model", None),
+        "provider_models": PROVIDER_MODELS,
+    }
+
+
+@router.put("/llm-default")
+async def set_llm_default(
+    data: DefaultLlmUpdate,
+    current_user: dict = Depends(get_current_user),
+):
+    """Set the user's default LLM provider and model for notebook generation."""
+    provider = data.provider.lower().strip()
+    if provider not in SUPPORTED_PROVIDERS:
+        raise HTTPException(400, f"Unsupported provider. Allowed: {', '.join(SUPPORTED_PROVIDERS)}")
+
+    # Verify API key is saved for this provider
+    row = _get_user_settings(current_user["id"])
+    api_keys = row.get("api_keys", {}) or {}
+    if provider not in api_keys:
+        raise HTTPException(400, f"No API key saved for {provider}. Save your key first.")
+
+    model = data.model or None
+    _set_llm_default(current_user["id"], provider, model)
+    return {
+        "message":  f"Default LLM set to {provider}" + (f" / {model}" if model else ""),
+        "provider": provider,
+        "model":    model,
+    }

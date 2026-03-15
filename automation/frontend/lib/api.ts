@@ -88,6 +88,9 @@ export const settingsAPI = {
   revealApiKey: (provider: string) => api.get(`/settings/api-keys/${provider}/reveal`),
   getNotifications:    () => api.get('/settings/notifications'),
   updateNotifications: (data: any) => api.put('/settings/notifications', data),
+  getLlmDefault:       () => api.get('/settings/llm-default'),
+  setLlmDefault:       (data: { provider: string; model?: string }) =>
+    api.put('/settings/llm-default', data),
 };
 
 // Analytics
