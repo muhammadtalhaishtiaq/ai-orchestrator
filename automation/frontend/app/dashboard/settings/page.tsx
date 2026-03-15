@@ -430,12 +430,56 @@ function ApiKeyCard({
 
 // ─── Default LLM Selector ─────────────────────────────────────────────────────
 
+interface ModelMeta { label: string; hint: string; badge?: string }
+
 const PROVIDER_MODELS: Record<string, string[]> = {
-  openai:    ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo"],
-  anthropic: ["claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022", "claude-3-opus-20240229"],
-  gemini:    ["gemini-1.5-pro", "gemini-1.5-flash", "gemini-2.0-flash"],
+  openai:     ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo"],
+  anthropic:  ["claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022", "claude-3-opus-20240229"],
+  gemini:     ["gemini-1.5-pro", "gemini-1.5-flash", "gemini-2.0-flash"],
   "aiml-api": ["gpt-4o", "gpt-4o-mini", "claude-3-5-sonnet", "gemini-1.5-pro"],
-  kimi:      ["kimi-k2-5", "kimi-k2", "moonshot-v1-8k", "moonshot-v1-32k", "moonshot-v1-128k", "moonshot-v1-5"],
+  kimi: [
+    "kimi-k2-turbo-preview",
+    "kimi-k2.5",
+    "kimi-k2-0905-preview",
+    "kimi-k2-0711-preview",
+    "kimi-k2-thinking-turbo",
+    "kimi-k2-thinking",
+    "moonshot-v1-auto",
+    "moonshot-v1-8k",
+    "moonshot-v1-32k",
+    "moonshot-v1-128k",
+  ],
+};
+
+const MODEL_META: Record<string, ModelMeta> = {
+  // OpenAI
+  "gpt-4o":              { label: "GPT-4o",             hint: "128k ctx · Best quality" },
+  "gpt-4o-mini":         { label: "GPT-4o Mini",         hint: "128k ctx · Fast & cheap" },
+  "gpt-4-turbo":         { label: "GPT-4 Turbo",         hint: "128k ctx · High quality" },
+  "gpt-3.5-turbo":       { label: "GPT-3.5 Turbo",       hint: "16k ctx · Fastest" },
+  // Anthropic
+  "claude-3-5-sonnet-20241022": { label: "Claude 3.5 Sonnet", hint: "200k ctx · Best reasoning" },
+  "claude-3-5-haiku-20241022":  { label: "Claude 3.5 Haiku",  hint: "200k ctx · Fast & cheap" },
+  "claude-3-opus-20240229":     { label: "Claude 3 Opus",     hint: "200k ctx · Most capable" },
+  // Gemini
+  "gemini-1.5-pro":   { label: "Gemini 1.5 Pro",   hint: "2M ctx · Best quality" },
+  "gemini-1.5-flash": { label: "Gemini 1.5 Flash", hint: "1M ctx · Fast & cheap" },
+  "gemini-2.0-flash": { label: "Gemini 2.0 Flash", hint: "1M ctx · Latest" },
+  // AIML API
+  "claude-3-5-sonnet": { label: "Claude 3.5 Sonnet (AIML)", hint: "via AIML API" },
+  "gemini-1.5-pro":    { label: "Gemini 1.5 Pro (AIML)",    hint: "via AIML API" },
+  // Kimi — kimi-k2 series
+  "kimi-k2-turbo-preview":   { label: "Kimi K2 Turbo Preview",   hint: "256k ctx · $1.15/$8.00 · 60 tok/s", badge: "Recommended" },
+  "kimi-k2.5":               { label: "Kimi K2.5",               hint: "256k ctx · $0.60/$3.00 · Multimodal + thinking" },
+  "kimi-k2-0905-preview":    { label: "Kimi K2 (Sep 2025)",      hint: "256k ctx · $0.60/$2.50 · Best coding" },
+  "kimi-k2-0711-preview":    { label: "Kimi K2 (Jul 2025)",      hint: "128k ctx · $0.60/$2.50" },
+  "kimi-k2-thinking-turbo":  { label: "Kimi K2 Thinking Turbo",  hint: "256k ctx · $1.15/$8.00 · Fast deep reasoning" },
+  "kimi-k2-thinking":        { label: "Kimi K2 Thinking",        hint: "256k ctx · $0.60/$2.50 · Deep reasoning" },
+  // Kimi — moonshot-v1 series
+  "moonshot-v1-auto":   { label: "Moonshot V1 Auto",    hint: "Auto ctx · Best value" },
+  "moonshot-v1-8k":     { label: "Moonshot V1 8K",      hint: "8k ctx · $0.20/$2.00 · Cheapest" },
+  "moonshot-v1-32k":    { label: "Moonshot V1 32K",     hint: "32k ctx · $1.00/$3.00" },
+  "moonshot-v1-128k":   { label: "Moonshot V1 128K",    hint: "128k ctx · $2.00/$5.00 · Largest" },
 };
 
 function DefaultLlmSelector({ keyMap }: { keyMap: Record<string, ApiKeyEntry> }) {
@@ -490,7 +534,13 @@ function DefaultLlmSelector({ keyMap }: { keyMap: Record<string, ApiKeyEntry> })
           <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
           <span className="text-sm text-green-700">
             Currently: <strong>{current.provider}</strong>
-            {current.model && <> / <strong>{current.model}</strong></>}
+            {current.model && (
+              <> / <strong>{MODEL_META[current.model]?.label ?? current.model}</strong>
+              {MODEL_META[current.model]?.hint && (
+                <span className="text-green-600 font-normal"> · {MODEL_META[current.model].hint}</span>
+              )}
+              </>
+            )}
           </span>
         </div>
       )}
@@ -520,12 +570,16 @@ function DefaultLlmSelector({ keyMap }: { keyMap: Record<string, ApiKeyEntry> })
               <select
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
-                className="border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600 bg-white min-w-[200px]"
+                className="border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600 bg-white min-w-[280px]"
               >
-                <option value="">Default model</option>
-                {models.map((m) => (
-                  <option key={m} value={m}>{m}</option>
-                ))}
+                <option value="">— Default model —</option>
+                {models.map((m) => {
+                  const meta = MODEL_META[m];
+                  const label = meta
+                    ? `${meta.label}${meta.badge ? " ★" : ""} · ${meta.hint}`
+                    : m;
+                  return <option key={m} value={m}>{label}</option>;
+                })}
               </select>
             </div>
           )}
