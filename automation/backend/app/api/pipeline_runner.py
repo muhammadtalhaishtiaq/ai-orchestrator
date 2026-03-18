@@ -197,6 +197,28 @@ async def _execute_pipeline_run(
         )
         _run_status[run_id]["logs"] = list(logs)
 
+        # ── Inject Colab badge into first markdown cell ───────────────────────
+        # Pattern matches the sample notebook:
+        # [![Open In Colab](...badge.svg)](https://colab.research.google.com/github/{repo}/blob/main/{path})
+        colab_url = (
+            f"https://colab.research.google.com/github/{repo_full_name}/blob/main/{nb_path}"
+        )
+        colab_badge = (
+            f"[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]"
+            f"({colab_url})"
+        )
+        for i, cell in enumerate(cells):
+            if cell.get("cell_type") == "markdown":
+                src = cell["source"]
+                # Only inject if badge not already present
+                if "colab-badge.svg" not in src:
+                    # Insert badge after the first heading line (or at top if no heading)
+                    lines = src.split("\n")
+                    insert_at = 1 if lines and lines[0].startswith("#") else 0
+                    lines.insert(insert_at, f"\n{colab_badge}\n")
+                    cells[i] = {**cell, "source": "\n".join(lines)}
+                break  # Only patch the first markdown cell
+
         # ── Step 5: Build .ipynb ──────────────────────────────────────────────
         _log(5, f"[5/{len(STEPS)}] Building .ipynb file...")
         await asyncio.sleep(0.2)

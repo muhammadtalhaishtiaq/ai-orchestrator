@@ -15,10 +15,41 @@ logging.basicConfig(level=logging.INFO)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
+    # ── Startup ───────────────────────────────────────────────────────────────
     get_scheduler()
+
+    # Restore all active scheduled pipelines from DB.
+    # APScheduler is in-memory only — jobs are lost on every restart without this.
+    try:
+        from app.database import supabase_admin
+        from app.services.scheduler_service import register_pipeline_job
+        result = supabase_admin.table("pipelines") \
+            .select("id, user_id, trigger_type, trigger_config, is_active") \
+            .eq("is_active", True) \
+            .in_("trigger_type", ["cron", "scheduled"]) \
+            .execute()
+        restored = 0
+        for pl in (result.data or []):
+            try:
+                ok = register_pipeline_job(
+                    pl["id"], pl["user_id"],
+                    pl["trigger_type"], pl.get("trigger_config") or {}
+                )
+                if ok:
+                    restored += 1
+            except Exception as e:
+                logging.getLogger(__name__).warning(
+                    f"Could not restore schedule for pipeline {pl['id']}: {e}"
+                )
+        logging.getLogger(__name__).info(
+            f"Scheduler startup: restored {restored} scheduled pipeline job(s)"
+        )
+    except Exception as e:
+        logging.getLogger(__name__).error(f"Failed to restore scheduled jobs on startup: {e}")
+
     yield
-    # Shutdown
+
+    # ── Shutdown ──────────────────────────────────────────────────────────────
     from app.services.scheduler_service import scheduler
     if scheduler.running:
         scheduler.shutdown(wait=False)
