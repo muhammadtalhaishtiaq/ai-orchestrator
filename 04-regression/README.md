@@ -1,9 +1,9 @@
-# 02 - Regression
+# 04 - Regression
 
-Master different regression techniques from linear to ensemble models.
+Master regression from simple linear models to modern boosted ensembles.
 
-**Notebooks**: 6  
-**Time**: ~2 hours
+**Notebooks**: 8  
+**Time**: ~2.5 hours
 
 ---
 
@@ -11,184 +11,102 @@ Master different regression techniques from linear to ensemble models.
 
 | Notebook | Focus | When to Use |
 |----------|-------|------------|
-| 01 Simple Linear | Single feature, straight line | Quick baseline, interpretability needed |
+| 01 Linear | Single feature, straight line | Quick baseline, interpretability |
 | 02 Multiple Linear | Multiple features, linear fit | Baseline with many inputs |
 | 03 Polynomial | Curved relationships | Non-linear patterns (degree 2-3) |
-| 04 SVR | Robust with outliers | Noise-tolerant fitting |
-| 05 Decision Tree | Step functions, interpretable | Non-linear, need feature importance |
-| 06 Random Forest | Ensemble, low overfitting | Best out-of-box performance |
+| 04 SVR | Robust to noise | Small or noisy datasets |
+| 05 Decision Tree | Step functions, interpretable | Non-linear, rules needed |
+| 06 Random Forest | Bagging ensemble | Strong generalization |
+| 07 Gradient Boosting | Sequential trees | Higher accuracy with tuning |
+| 08 XGBoost | Optimized boosting | High performance on tabular data |
 
 ---
 
-## Decision Tree
-
-Choose your regression model:
+## Decision Guide
 
 ```
 Is the relationship linear?
-├─ YES: Use Linear (Multiple if features > 1)
-└─ NO: Is it curved?
-       ├─ YES: Polynomial (degree ≈ 2-3)
-       └─ NO: Is data noisy?
-              ├─ YES: SVR (robust tube tolerance)
-              └─ NO: Non-linear multi-level?
-                     ├─ YES: Decision Tree (interpretable)
-                     └─ NO: Try Random Forest (safest bet)
+├─ YES: Linear or Multiple Linear
+└─ NO: Is it curved and smooth?
+       ├─ YES: Polynomial
+       └─ NO: Is the data noisy?
+              ├─ YES: SVR
+              └─ NO: Do you need interpretability?
+                     ├─ YES: Decision Tree
+                     └─ NO: Random Forest or Gradient Boosting
 ```
 
 ---
 
-## Quick Reference
+## Key Metrics
 
-### Performance Ranking
-1. **Best Generalization**: Random Forest (ensemble + bagging)
-2. **Best for Outliers**: SVR (epsilon tube)
-3. **Most Interpretable**: Decision Tree (see the rules)
-4. **Best for Non-Linear**: Polynomial or Decision Tree
-5. **Baseline**: Linear/Multiple (fast, simple)
-
-### Key Metrics
-- **R² Score**: [0, 1] where 1 = perfect fit
-- **RMSE**: Root Mean Squared Error (same units as target)
-- **MAE**: Mean Absolute Error (robust to outliers)
-
-### Hyperparameters to Tune
-- **Polynomial**: degree (2-3 usually)
-- **SVR**: C (regulatory), epsilon (tube width), kernel
-- **Decision Tree**: max_depth (5-15), min_samples_leaf
-- **Random Forest**: n_estimators (100-200), max_depth
-
----
-
-## Common Patterns
-
-### Overfitting Detection
-```python
-if train_r2 >> test_r2:
-    # Model overfit to training data
-    # Solution: Reduce complexity (depth, degree, C)
-```
-
-### Scaling
-- **Linear/SVR**: REQUIRED (StandardScaler)
-- **Tree-based**: Not needed (scale-invariant)
-- **Polynomial**: Use before transform
-
-### Prediction Stability
-- **Linear/Poly**: Smooth predictions
-- **Trees**: Step-function predictions
-- **Forest**: Smoother than single tree
-
----
-
-## Real-World Examples
-
-### House Price Prediction
-```
-Data: Size, Bedrooms, Age, Location
-├─ Simple: Multiple Linear (R² ≈ 0.75)
-├─ Better: Random Forest (R² ≈ 0.88)
-└─ Best: Forest + feature engineering
-```
-
-### Stock Price Prediction
-```
-Data: Historical prices, volume, indicators
-├─ Noisy: Use SVR (robust)
-├─ Time-series: Need lagged features
-└─ Risk: Trees fail for extrapolation
-```
-
-### Salary Prediction
-```
-Data: Experience, education, skills
-├─ Pattern: Non-linear growth curve
-├─ Solution: Polynomial or Tree
-└─ Interpretability: Decision Tree wins
-```
+- R2: overall fit quality
+- MAE: average absolute error
+- RMSE: penalizes large errors
 
 ---
 
 ## Notebook Highlights
 
-### 01_simple_linear_regression.ipynb
-- Equation y = mx + b
-- R² and RMSE metrics
-- Residual analysis (normality check)
-- Train-test evaluation
+### 01_linear_regression.ipynb
+- One feature, closed form solution
+- Residual analysis
+- MAE, RMSE, R2 evaluation
 
 ### 02_multiple_linear_regression.ipynb
-- Multiple features: y = β₀ + β₁x₁ + β₂x₂ + ...
-- Multicollinearity detection (correlation > 0.7)
-- Feature importance (standardized coefficients)
-- Actual vs predicted visualization
+- Multiple features
+- Coefficient interpretation
+- Correlation checks for multicollinearity
 
 ### 03_polynomial_regression.ipynb
-- Non-linear fits (degree 2-3 optimal)
-- Feature engineering (x² from x)
-- Overfitting risk (train vs test gap)
+- Non-linear relationships
 - Degree selection strategy
+- Overfitting risk analysis
 
 ### 04_support_vector_regression.ipynb
-- Epsilon tube concept (tolerance)
-- Robust to outliers
-- Hyperparameters: C, epsilon, kernel
-- Linear vs RBF kernels
+- Epsilon tube intuition
+- Kernel choice (linear vs RBF)
+- Robustness to noise
 
 ### 05_decision_tree_regression.ipynb
-- Step function predictions
-- Tree visualization (see rules)
+- Stepwise predictions
 - Feature importance
-- Depth tuning (prevent overfitting)
+- Depth control for overfitting
 
 ### 06_random_forest_regression.ipynb
-- Bagging: Bootstrap + aggregating
-- Ensemble power (100+ trees)
-- OOB error (free cross-validation)
+- Bagging ensemble
+- Strong baseline for tabular data
 - Feature importance from forest
+
+### 07_gradient_boosting_regression.ipynb
+- Sequential trees that correct errors
+- Tuning learning_rate and n_estimators
+- Improved accuracy on non-linear data
+
+### 08_xgboost_regression.ipynb
+- Optimized boosting with regularization
+- Handles complex patterns
+- Feature importance and fast training
 
 ---
 
-## Tips & Tricks
+## Tips
 
-✅ **DO:**
-- Scale before Linear/Polynomial/SVR
-- Check R² on test set (not train)
-- Visualize residuals for Linear
-- Use OOB score for tuning
-- Start simple, add complexity
-
-❌ **DON'T:**
-- Evaluate on training data only
-- Use high polynomial degrees (overfitting)
-- Forget to tune hyperparameters
-- Ignore feature scaling for SVM
-- Expect trees to extrapolate
+- Scale features for Linear, Polynomial, and SVR
+- Tree-based models do not need scaling
+- Use train-test split before feature engineering
+- Prefer ensembles for non-linear, high-variance data
 
 ---
 
 ## Next Steps
 
-After mastering regression:
-- Try **Classification** (03)
-- Add **Feature Engineering** (manipulation)
-- Learn **Model Selection** (validation strategies)
-- Explore **Ensemble Methods** (boosting)
+After regression, move to:
+- 05-classification
+- 06-clustering
+- 08-model-evaluation
 
 ---
 
-## Challenge
-
-**Build a Price Predictor:**
-1. Load housing dataset (size, rooms, age, location)
-2. Train 3+ models (Linear, Poly, Forest)
-3. Compare test R²
-4. Identify top features
-5. Make predictions on new data
-6. Explain why Forest wins
-
----
-
-**Difficulty**: ⭐⭐ (Intermediate)  
-**Prerequisites**: 01-data-preprocessing complete  
-**Time to Master**: 2-3 days with practice
+**Difficulty**: Intermediate  
+**Prerequisites**: data preprocessing and EDA

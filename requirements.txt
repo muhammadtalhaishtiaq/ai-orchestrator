@@ -1,31 +1,26 @@
-# Core ML/Data Science
-numpy
-pandas
-matplotlib
-seaborn
-scikit-learn
+# === BOT DEPENDENCIES (Required for Railway) ===
+python-telegram-bot[job-queue]>=20.0
+PyGithub>=1.58
+nbformat>=5.7
+openai>=1.0.0
+pytz
 
-# Deep Learning (pick one based on preference)
-torch
-# tensorflow
-
-# NLP
-transformers
-nltk
-spacy
-
-# Visualization
-plotly
-
-# Notebooks
-jupyter
-ipykernel
-
-# LLMs & Agents
-langchain
-openai
-chromadb
-
-# MLOps
-mlflow
-wandb
+# === CORE ML (Commented out for fast Railway deploy) ===
+# Colab has these pre-installed! No need to host them on Railway.
+# numpy
+# pandas
+# matplotlib
+# seaborn
+# scikit-learn
+# torch
+# transformers
+# nltk
+# spacy
+# plotly
+# jupyter
+# ipykernel
+# langchain
+# openai
+# chromadb
+# mlflow
+# wandb
